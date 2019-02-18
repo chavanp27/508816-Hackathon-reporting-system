@@ -13,12 +13,12 @@ import javax.validation.constraints.NotBlank;
 
 import lombok.Data;
 
-@Entity(name="ORA_OUTREACH_REF_EVENT_CAT")
+//@Entity(name="ORA_OUTREACH_REF_EVENT_CAT")
 @Data
 public class EventCategory {
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Integer id;
 	
 	@NotBlank
@@ -28,7 +28,7 @@ public class EventCategory {
 	
 	private String focusArea;
 	
-	private String status;
+	private Character status;
 	
 	private String createdBy;
 	

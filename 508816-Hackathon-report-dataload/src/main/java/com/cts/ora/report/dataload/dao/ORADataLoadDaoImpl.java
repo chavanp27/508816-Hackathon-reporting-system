@@ -54,7 +54,7 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		logger.info("Into geAlltAssociates");
 		List<Associate> associates = null;
 		associates = entityManager
-					     .createQuery("from Associate", Associate.class)
+					     .createQuery("from ORA_OUTREACH_ASSOCIATE", Associate.class)
 					     .getResultList();
 		logger.info("Out of geAlltAssociates");
 		return associates;

@@ -13,26 +13,30 @@ import javax.validation.constraints.NotBlank;
 
 import lombok.Data;
 
-@Entity(name="ORA_OUTREACH_REF_PROJECTS")
+//@Entity(name="ORA_OUTREACH_REF_PROJECTS")
 @Data
 public class Project {
 	
-	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Id @Column
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Integer id;
 	
-	@Column(name="project_tile") @NotBlank
+	@Column(name="project_title") @NotBlank
 	private String title;
 	
+	@Column
 	private String description;
 	
+	@Column(name="focus_area")
 	private String focusArea;
 	
-	private String status;
+	@Column
+	private Character status;
 	
+	@Column(name="created_by")
 	private String createdBy;
 	
-	@Column 
+	@Column(name="created_date") 
 	@Temporal(TemporalType.DATE)
 	private Date createdDate;
 

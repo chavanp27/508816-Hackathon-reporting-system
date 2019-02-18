@@ -39,7 +39,7 @@ public class Associate {
 	private Integer bu_id;
 	
 	@ManyToOne(fetch=FetchType.LAZY,cascade=CascadeType.ALL)
-	@JoinColumn(name="bu_id",insertable=true,updatable=true)
+	@JoinColumn(name="bu_id",insertable=false,updatable=false)
 	private BusinessUnit bu;
 	
 	@Column(name="is_volunteer")
