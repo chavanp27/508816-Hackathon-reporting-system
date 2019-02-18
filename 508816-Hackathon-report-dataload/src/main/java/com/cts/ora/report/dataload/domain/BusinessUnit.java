@@ -29,7 +29,7 @@ public class BusinessUnit {
 	@Column
 	private String description;
 	
-	@OneToMany(fetch=FetchType.LAZY,mappedBy="bu")
-	private Set<Associate> associates; 
+	//@OneToMany(fetch=FetchType.LAZY,mappedBy="bu")
+	//private Set<Associate> associates; 
 
 }

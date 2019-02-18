@@ -13,7 +13,7 @@ import javax.validation.constraints.NotBlank;
 
 import lombok.Data;
 
-//@Entity(name="ORA_OUTREACH_REF_PROJECTS")
+@Entity(name="ORA_OUTREACH_REF_PROJECTS")
 @Data
 public class Project {
 	

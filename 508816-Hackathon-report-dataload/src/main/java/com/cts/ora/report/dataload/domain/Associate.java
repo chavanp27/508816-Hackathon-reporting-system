@@ -19,6 +19,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Entity(name="ORA_OUTREACH_ASSOCIATE")
+//@Table(appliesTo="ora_outreach_associate")
 @Data
 @EqualsAndHashCode(of= {"id","name","designation"})
 //@Cacheable
@@ -38,9 +39,9 @@ public class Associate {
 	@Column
 	private Integer bu_id;
 	
-	@ManyToOne(fetch=FetchType.LAZY,cascade=CascadeType.ALL)
-	@JoinColumn(name="bu_id",insertable=false,updatable=false)
-	private BusinessUnit bu;
+	//@ManyToOne(fetch=FetchType.LAZY)
+	//@JoinColumn(name="bu_id",insertable=false,updatable=false)
+	//private BusinessUnit bu;
 	
 	@Column(name="is_volunteer")
 	@Type(type= "org.hibernate.type.NumericBooleanType")
