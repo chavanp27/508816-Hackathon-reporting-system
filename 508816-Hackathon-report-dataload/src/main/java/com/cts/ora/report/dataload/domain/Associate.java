@@ -11,15 +11,16 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 
 import org.hibernate.annotations.Type;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Entity(name="ORA_OUTREACH_ASSOCIATE")
 @Data
+@EqualsAndHashCode(of= {"id","name","designation"})
 //@Cacheable
 public class Associate {
 	
@@ -38,11 +39,8 @@ public class Associate {
 	private Integer bu_id;
 	
 	@ManyToOne(fetch=FetchType.LAZY,cascade=CascadeType.ALL)
-	@JoinColumn(name="bu_id",insertable=false,updatable=false)
+	@JoinColumn(name="bu_id",insertable=true,updatable=true)
 	private BusinessUnit bu;
-	
-	@Transient
-	private String buName;
 	
 	@Column(name="is_volunteer")
 	@Type(type= "org.hibernate.type.NumericBooleanType")

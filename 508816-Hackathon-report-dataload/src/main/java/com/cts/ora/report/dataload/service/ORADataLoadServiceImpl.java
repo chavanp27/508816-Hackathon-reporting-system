@@ -158,4 +158,11 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		ORADataLoadServiceImpl srv = new ORADataLoadServiceImpl();
 		srv.parseAssociateInputFile(fp);
 	}
+
+
+	@Override
+	public List<Associate> getAssociates() {
+		logger.info("Into getAssociates");
+		return oraDataLoadDao.geAllAssociates();
+	}
 }

@@ -24,10 +24,14 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 	@PersistenceContext	
 	private EntityManager entityManager;
 	
+	//@Autowired private SessionFactory sessionFactory;
+	
 
 	@Override
 	public void saveAssociates(List<Associate> associates) {
 		logger.info("Into saveAssociates");
+		
+		
 		
 		logger.info("Out of saveAssociates");
 		
@@ -49,7 +53,9 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 	public List<Associate> geAllAssociates() {
 		logger.info("Into geAlltAssociates");
 		List<Associate> associates = null;
-		
+		associates = entityManager
+					     .createQuery("from Associate", Associate.class)
+					     .getResultList();
 		logger.info("Out of geAlltAssociates");
 		return associates;
 	}
