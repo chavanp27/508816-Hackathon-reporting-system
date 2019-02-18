@@ -1,0 +1,59 @@
+package com.cts.ora.report.dataload.domain;
+
+import java.util.Date;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+import javax.validation.constraints.NotBlank;
+
+import org.hibernate.annotations.Type;
+
+import lombok.Data;
+
+@Entity(name="ORA_OUTREACH_ASSOCIATE")
+@Data
+//@Cacheable
+public class Associate {
+	
+	@Id
+	@NotBlank
+	@Column(name="asc_id")
+	private Integer id;
+	
+	@Column @NotBlank
+	private String name;
+	
+	@Column
+	private String designation;
+	
+	@Column
+	private Integer bu_id;
+	
+	@ManyToOne(fetch=FetchType.LAZY,cascade=CascadeType.ALL)
+	@JoinColumn(name="bu_id",insertable=false,updatable=false)
+	private BusinessUnit bu;
+	
+	@Transient
+	private String buName;
+	
+	@Column(name="is_volunteer")
+	@Type(type= "org.hibernate.type.NumericBooleanType")
+	private Boolean isVolunteer;
+	
+	@Column(name="is_poc")
+	@Type(type= "org.hibernate.type.NumericBooleanType")
+	private Boolean isPOC;
+	
+	@Column 
+	@Temporal(TemporalType.DATE)
+	private Date createdDate;
+
+}
