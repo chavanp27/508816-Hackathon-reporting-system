@@ -6,7 +6,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
 
-import org.hibernate.FetchMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,17 +22,20 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 	private EntityManagerFactory entityManagerFactory;
 	
 	@PersistenceContext	
-	private EntityManager entityManager;
+	private EntityManager em;
 	
 	//@Autowired private SessionFactory sessionFactory;
 	
 
 	@Override
 	public void saveAssociates(List<Associate> associates) {
-		logger.info("Into saveAssociates");
+		logger.info("Into saveAssociates:"+associates);
 		
-		
-		
+		for(Associate a:associates) {
+			em.persist(a);
+		}
+	    em.getTransaction().commit();
+	    
 		logger.info("Out of saveAssociates");
 		
 	}
@@ -54,8 +56,7 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 	public List<Associate> geAllAssociates() {
 		logger.info("Into geAlltAssociates");
 		List<Associate> associates = null;
-		associates = entityManager
-					     .createQuery("from ORA_OUTREACH_ASSOCIATE", Associate.class)
+		associates = em.createQuery("from ORA_OUTREACH_ASSOCIATE", Associate.class)
 					     .setFirstResult(0)
 					     .getResultList();
 		logger.info("Out of geAlltAssociates");

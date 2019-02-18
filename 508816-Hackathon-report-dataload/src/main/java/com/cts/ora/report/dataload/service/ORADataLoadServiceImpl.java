@@ -71,11 +71,11 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 				existingAssociates = oraDataLoadDao.geAllAssociates();
 			}
 			
-			for (int r = 0; r < rows; r++) {
+			for (int r = 1; r < rows; r++) {
 				XSSFRow row = sheet.getRow(r);
 				if (row != null) {
-					double empId = isValidCell(row.getCell(0))?row.getCell(0).getNumericCellValue():-1;
-					if(isAssociateExists(existingAssociates,empId)){
+					String empId = isValidCell(row.getCell(0))?row.getCell(0).getRawValue():"-1";
+					if(isAssociateExists(existingAssociates,Long.parseLong(empId))){
 						continue;
 					}
 					String name = isValidCell(row.getCell(1))?row.getCell(1).getRichStringCellValue().getString():null;
@@ -112,9 +112,9 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		return ascLst;
 	}
 	
-	private boolean isAssociateExists(List<Associate> existingAssociates,double empId){
+	private boolean isAssociateExists(List<Associate> existingAssociates,Long empId){
 		if(existingAssociates!=null){
-			return existingAssociates.stream().map(a->a.getId()).filter(id->(id.doubleValue()==empId)).count()>0?true:false;
+			return existingAssociates.stream().map(a->a.getId()).filter(id->(empId>0 && id.doubleValue()==empId)).count()>0?true:false;
 		}else{
 			return false;
 		}
@@ -153,7 +153,8 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	}
 	
 	public static void main(String[] args){
-		String fp = "C:\\Users\\hp\\Desktop\\Cognizant FSE\\Input Data\\Associate Details.xlsx";
+		//String fp = "C:\\Users\\hp\\Desktop\\Cognizant FSE\\Input Data\\Associate Details.xlsx";
+		String fp = "/Volumes/DATA/test/fse_input/AssociateDetails.xlsx";
 		
 		ORADataLoadServiceImpl srv = new ORADataLoadServiceImpl();
 		srv.parseAssociateInputFile(fp);
