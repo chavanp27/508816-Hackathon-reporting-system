@@ -11,6 +11,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotBlank;
 
+import org.springframework.data.annotation.CreatedDate;
+
 import lombok.Data;
 
 @Entity(name="ORA_OUTREACH_REF_EVENT_CAT")
@@ -32,7 +34,7 @@ public class EventCategory {
 	
 	private String createdBy;
 	
-	@Column 
+	@Column @CreatedDate
 	@Temporal(TemporalType.DATE)
 	private Date createdDate;
 

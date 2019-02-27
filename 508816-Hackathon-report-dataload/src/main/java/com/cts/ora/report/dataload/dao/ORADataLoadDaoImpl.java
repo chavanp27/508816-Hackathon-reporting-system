@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,17 +12,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.cts.ora.report.dataload.domain.Associate;
+import com.cts.ora.report.dataload.repository.AssociateRepository;
 
 @Component
 public class ORADataLoadDaoImpl implements ORADataLoadDao {
 	
 	Logger logger = LoggerFactory.getLogger(ORADataLoadDaoImpl.class);
 	
-	@Autowired
-	private EntityManagerFactory entityManagerFactory;
+	@PersistenceUnit
+	private EntityManagerFactory emf;
 	
-	@PersistenceContext	
 	private EntityManager em;
+	
+	@Autowired
+	private AssociateRepository ascRepo;
+	
+	//@PersistenceContext	
+	//private EntityManager em;
 	
 	//@Autowired private SessionFactory sessionFactory;
 	
@@ -30,11 +36,27 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 	@Override
 	public void saveAssociates(List<Associate> associates) {
 		logger.info("Into saveAssociates:"+associates);
-		
-		for(Associate a:associates) {
-			em.persist(a);
+		 em = emf.createEntityManager();
+		try {
+			
+			//utx.begin();
+			em.getTransaction().begin();
+			for(Associate a:associates) {
+				em.persist(a.getBu());
+				em.persist(a);
+			}
+		    //utx.commit();
+			em.getTransaction().commit();
+			em.close();
+			
+		}catch(Exception e) {
+			try {
+				//utx.rollback();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
 		}
-	    em.getTransaction().commit();
+		
 	    
 		logger.info("Out of saveAssociates");
 		
@@ -54,12 +76,16 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 
 	@Override
 	public List<Associate> geAllAssociates() {
-		logger.info("Into geAlltAssociates");
+		logger.info("Into geAllAssociates");
 		List<Associate> associates = null;
-		associates = em.createQuery("from ORA_OUTREACH_ASSOCIATE", Associate.class)
+		 em = emf.createEntityManager();
+		associates = (List<Associate>) em.createNativeQuery("select * from ora_outreach_associate").getResultList();
+						 /*.createQuery("from ORA_OUTREACH_ASSOCIATE", Associate.class)
 					     .setFirstResult(0)
-					     .getResultList();
-		logger.info("Out of geAlltAssociates");
+					     .getResultList();*/
+		
+		//associates = ascRepo.findAllAssociates();
+		logger.info("Out of geAllAssociates");
 		return associates;
 	}
 
