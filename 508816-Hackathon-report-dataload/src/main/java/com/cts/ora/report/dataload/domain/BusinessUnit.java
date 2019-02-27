@@ -18,22 +18,22 @@ import org.hibernate.annotations.GenericGenerator;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Entity()
 @Table(
 		name="ora_ref_assc_bu", 
         uniqueConstraints=
-            @UniqueConstraint(columnNames={"buId", "name"})
+            @UniqueConstraint(columnNames={"name"})
     )
-@Data
-@EqualsAndHashCode(exclude= {"associates"})
+@Data @ToString
+@EqualsAndHashCode(of= {"name"})
 public class BusinessUnit {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO,generator="native")
 	@GenericGenerator(
-	    name = "native",
-	    strategy = "native"
+	    name = "native", strategy = "native"
 	)
 	private Integer buId;
 	

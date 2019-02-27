@@ -10,6 +10,10 @@ public interface ORADataLoadService {
 	
 	List<Associate> getAssociates();
 	
-	ORAResponse loadAssociateData(ORADataLoadRequest request);
+	ORAResponse loadIncomingFiles(ORADataLoadRequest request);
+	
+	ORAResponse fetchDataLoadLog(ORADataLoadRequest request);
+	
+
 
 }

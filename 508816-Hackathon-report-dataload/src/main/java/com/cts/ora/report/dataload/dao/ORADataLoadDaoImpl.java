@@ -1,6 +1,7 @@
 package com.cts.ora.report.dataload.dao;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -12,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.cts.ora.report.dataload.domain.Associate;
+import com.cts.ora.report.dataload.domain.BusinessUnit;
 import com.cts.ora.report.dataload.repository.AssociateRepository;
+import com.cts.ora.report.exception.ORAException;
 
 @Component
 public class ORADataLoadDaoImpl implements ORADataLoadDao {
@@ -38,11 +41,13 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		logger.info("Into saveAssociates:"+associates);
 		 em = emf.createEntityManager();
 		try {
-			
-			//utx.begin();
 			em.getTransaction().begin();
+			List<BusinessUnit> bus = associates.stream().filter(a->!a.isBuExists()).map(a->a.getBu()).distinct().collect(Collectors.toList());
+			for(BusinessUnit bu:bus){
+				em.persist(bu);
+			}
+			
 			for(Associate a:associates) {
-				em.persist(a.getBu());
 				em.persist(a);
 			}
 		    //utx.commit();
@@ -51,7 +56,8 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 			
 		}catch(Exception e) {
 			try {
-				//utx.rollback();
+				em.getTransaction().rollback();
+				throw new ORAException("DATA_SAVE_FAILURE", "Associate Data not saved", e);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -79,7 +85,7 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		logger.info("Into geAllAssociates");
 		List<Associate> associates = null;
 		 em = emf.createEntityManager();
-		associates = (List<Associate>) em.createNativeQuery("select * from ora_outreach_associate").getResultList();
+		associates =  em.createNativeQuery("select * from ora_outreach_associate",Associate.class).getResultList();
 						 /*.createQuery("from ORA_OUTREACH_ASSOCIATE", Associate.class)
 					     .setFirstResult(0)
 					     .getResultList();*/
@@ -87,6 +93,18 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		//associates = ascRepo.findAllAssociates();
 		logger.info("Out of geAllAssociates");
 		return associates;
+	}
+	
+	@Override
+	public List<BusinessUnit> geAllBusinessUnits() {
+		logger.info("Into geAllBusinessUnits");
+		List<BusinessUnit> buList = null;
+		 em = emf.createEntityManager();
+		 buList = (List<BusinessUnit>) em.createNativeQuery("select * from ora_ref_assc_bu").getResultList();
+		
+		//associates = ascRepo.findAllAssociates();
+		logger.info("Out of geAllBusinessUnits");
+		return buList;
 	}
 
 }
