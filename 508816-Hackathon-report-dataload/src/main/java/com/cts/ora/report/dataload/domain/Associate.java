@@ -13,20 +13,21 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotBlank;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-@Entity(name="ORA_OUTREACH_ASSOCIATE")
-//@Table(appliesTo="ora_outreach_associate")
+@Entity(name="ora_outreach_associate")
 @Data
 @EqualsAndHashCode(of= {"id","name","designation"})
 //@Cacheable
 public class Associate {
 	
 	@Id
-	@NotBlank
 	@Column(name="asc_id")
 	private Integer id;
 	
@@ -36,12 +37,9 @@ public class Associate {
 	@Column
 	private String designation;
 	
-	@Column
-	private Integer bu_id;
-	
-	//@ManyToOne(fetch=FetchType.LAZY)
-	//@JoinColumn(name="bu_id",insertable=false,updatable=false)
-	//private BusinessUnit bu;
+	@ManyToOne(fetch=FetchType.LAZY, cascade = CascadeType.PERSIST)
+	@JoinColumn(name="buId",insertable=true,updatable=true)
+	private BusinessUnit bu;
 	
 	@Column(name="is_volunteer")
 	@Type(type= "org.hibernate.type.NumericBooleanType")
@@ -51,8 +49,9 @@ public class Associate {
 	@Type(type= "org.hibernate.type.NumericBooleanType")
 	private Boolean isPOC;
 	
-	@Column 
+	@Column @CreationTimestamp
 	@Temporal(TemporalType.DATE)
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private Date createdDate;
 
 }

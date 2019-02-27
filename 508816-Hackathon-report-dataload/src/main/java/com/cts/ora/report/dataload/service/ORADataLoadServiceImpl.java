@@ -19,6 +19,7 @@ import com.cts.ora.report.common.util.JSONConverter;
 import com.cts.ora.report.common.vo.ORAResponse;
 import com.cts.ora.report.dataload.dao.ORADataLoadDao;
 import com.cts.ora.report.dataload.domain.Associate;
+import com.cts.ora.report.dataload.domain.BusinessUnit;
 import com.cts.ora.report.dataload.vo.ORADataLoadRequest;
 import com.cts.ora.report.exception.ORAException;
 
@@ -82,13 +83,18 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					String name = isValidCell(row.getCell(1))?row.getCell(1).getRichStringCellValue().getString():null;
 					String designation = isValidCell(row.getCell(2))?row.getCell(2).getRichStringCellValue().getString():null;
 					//String loc = isValidCell(row.getCell(3))?row.getCell(3).getRichStringCellValue().getString():null;
-					String bu = isValidCell(row.getCell(4))?row.getCell(4).getRichStringCellValue().getString():null;
+					String buName = isValidCell(row.getCell(4))?row.getCell(4).getRichStringCellValue().getString():null;
 					
 					a = new Associate();
 					a.setId(Integer.parseInt(empId+""));
 					a.setName(name);
 					a.setDesignation(designation);
 					//a.setBu_id(bu); FK reference
+					BusinessUnit bu = new BusinessUnit();
+					bu.setName(buName);
+					bu.setDescription(buName);
+					a.setBu(bu);
+					
 					a.setIsPOC(Boolean.FALSE);
 					a.setIsVolunteer(Boolean.FALSE);
 					
@@ -109,12 +115,12 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					}
 				}
 			}
-		
+		logger.info("Input data=="+ascLst);
 		return ascLst;
 	}
 	
 	private boolean isAssociateExists(List<Associate> existingAssociates,Long empId){
-		if(existingAssociates!=null){
+		if(existingAssociates!=null && existingAssociates.size()>0){
 			return existingAssociates.stream().map(a->a.getId()).filter(id->(empId>0 && id.doubleValue()==empId)).count()>0?true:false;
 		}else{
 			return false;
