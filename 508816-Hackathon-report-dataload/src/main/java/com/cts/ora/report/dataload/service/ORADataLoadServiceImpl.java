@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.cts.ora.report.common.util.JSONConverter;
 import com.cts.ora.report.common.vo.ORAResponse;
 import com.cts.ora.report.dataload.dao.ORADataLoadDao;
 import com.cts.ora.report.dataload.domain.Associate;
@@ -68,7 +69,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			logger.info("Associate Sheet has " + rows+ " row(s).");
 			if(rows>0){
 				//Fetch existing employees
-				existingAssociates = oraDataLoadDao.geAllAssociates();
+				//existingAssociates = oraDataLoadDao.geAllAssociates();
 			}
 			
 			for (int r = 1; r < rows; r++) {
@@ -94,7 +95,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					ascLst.add(a);
 				}
 			}
-			
+			logger.info("Out of parseAssociateInputFile"+JSONConverter.toString(ascLst));
 			
 			}catch(Exception e){
 				e.printStackTrace();
@@ -153,8 +154,8 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	}
 	
 	public static void main(String[] args){
-		//String fp = "C:\\Users\\hp\\Desktop\\Cognizant FSE\\Input Data\\Associate Details.xlsx";
-		String fp = "/Volumes/DATA/test/fse_input/AssociateDetails.xlsx";
+		String fp = "C:\\Users\\hp\\Desktop\\Cognizant FSE\\Input Data\\Associate Details.xlsx";
+		//String fp = "/Volumes/DATA/test/fse_input/AssociateDetails.xlsx";
 		
 		ORADataLoadServiceImpl srv = new ORADataLoadServiceImpl();
 		srv.parseAssociateInputFile(fp);
