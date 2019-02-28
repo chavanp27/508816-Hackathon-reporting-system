@@ -31,7 +31,7 @@ import lombok.ToString;
 @SqlResultSetMapping(
         name = "AssociateMapping",
         entities ={ @EntityResult(
-                entityClass = Associate.class,
+                entityClass = com.cts.ora.report.dataload.domain.Associate.class,
                 fields = {
 	                    @FieldResult(name = "id", column = "asc_id"),
 	                    @FieldResult(name = "name", column = "name"),
@@ -42,7 +42,7 @@ import lombok.ToString;
 	                    //,@FieldResult(name = "bu.buId", column = "bu_id")
                     }),
                     @EntityResult(
-                entityClass = BusinessUnit.class,
+                entityClass = com.cts.ora.report.dataload.domain.BusinessUnit.class,
                 fields = {
 	                    @FieldResult(name = "buId", column = "bu_id")
                     })
