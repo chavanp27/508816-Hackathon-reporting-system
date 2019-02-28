@@ -3,9 +3,7 @@ package com.cts.ora.report.dataload.domain;
 import java.util.Set;
 
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -37,14 +35,13 @@ public class BusinessUnit {
 	)
 	private Integer buId;
 	
-	@Column @NotBlank 
+	@Column @NotBlank
 	private String name;
 	
 	@Column
 	private String description;
 	
-	@OneToMany(fetch=FetchType.LAZY,mappedBy="bu")
-	@ElementCollection
+	@OneToMany(mappedBy="bu")
 	private Set<Associate> associates; 
 
 }

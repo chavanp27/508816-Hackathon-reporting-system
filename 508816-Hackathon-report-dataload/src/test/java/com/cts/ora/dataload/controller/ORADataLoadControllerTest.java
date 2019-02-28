@@ -32,7 +32,7 @@ public class ORADataLoadControllerTest {
 	@Test
 	public void testHelloWorld() {
 		
-		Object response = controller.helloWorld();
+		Object response = controller.getAssociates();
 		assertEquals(response, "Hello World");
 	}
 

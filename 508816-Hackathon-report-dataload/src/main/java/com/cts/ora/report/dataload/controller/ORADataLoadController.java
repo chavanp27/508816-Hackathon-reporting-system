@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cts.ora.report.common.util.JSONConverter;
 import com.cts.ora.report.common.util.ORAMessageUtil;
 import com.cts.ora.report.common.vo.ORAResponse;
 import com.cts.ora.report.dataload.domain.Associate;
@@ -51,6 +52,7 @@ public class ORADataLoadController {
 		logger.info("Into loadAssociateData");
 		ORAResponse resp=null;
 		try {
+			logger.info("Request=="+JSONConverter.toString(request));
 			StopWatch watch = new StopWatch();
 			watch.start();
 			resp = service.loadIncomingFiles(request);

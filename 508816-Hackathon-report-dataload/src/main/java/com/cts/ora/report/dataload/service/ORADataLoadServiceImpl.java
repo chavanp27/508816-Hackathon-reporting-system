@@ -218,7 +218,13 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	
 	private boolean isAssociateExists(List<Associate> existingAssociates,Long empId){
 		if(existingAssociates!=null && existingAssociates.size()>0){
-			return existingAssociates.stream().map(a->a.getId()).filter(id->(empId>0 && id.longValue()==empId.longValue())).count()>0?true:false;
+			for(Associate asc:existingAssociates) {
+				if(empId!=null && asc.getId()!=null && asc.getId().equals(empId.intValue())) {
+					return true;
+				}
+			}
+			return false;
+			//return existingAssociates.stream().map(a->a.getId()).filter(id->(empId>0 && id.longValue()==empId.longValue())).count()>0?true:false;
 		}else{
 			return false;
 		}
