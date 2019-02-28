@@ -9,7 +9,6 @@ import javax.persistence.FieldResult;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedNativeQuery;
 import javax.persistence.SqlResultSetMapping;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -29,9 +28,9 @@ import lombok.ToString;
 @Entity(name="ora_outreach_associate") @Table(name="ora_outreach_associate")
 @Getter @Setter @ToString
 @EqualsAndHashCode(of= {"id","name","designation"})
-/*@SqlResultSetMapping(
+@SqlResultSetMapping(
         name = "AssociateMapping",
-        entities = @EntityResult(
+        entities ={ @EntityResult(
                 entityClass = Associate.class,
                 fields = {
 	                    @FieldResult(name = "id", column = "asc_id"),
@@ -39,12 +38,17 @@ import lombok.ToString;
 	                    @FieldResult(name = "designation", column = "designation"),
 	                    @FieldResult(name = "isVolunteer", column = "is_volunteer"),
 	                    @FieldResult(name = "isPOC", column = "is_poc"),
-	                    @FieldResult(name = "createdDate", column = "created_date"),
-	                    @FieldResult(name = "bu.buId", column = "bu_id")
-                    }))
-@NamedNativeQuery(name="ascComposite", 
-query="select a.* from ora_outreach_associate a inner join ora_ref_assc_bu b on a.bu_id=b.bu_id", 
-resultSetMapping="AssociateMapping")*/
+	                    @FieldResult(name = "createdDate", column = "created_date")
+	                    //,@FieldResult(name = "bu.buId", column = "bu_id")
+                    }),
+                    @EntityResult(
+                entityClass = BusinessUnit.class,
+                fields = {
+	                    @FieldResult(name = "buId", column = "bu_id")
+                    })
+                    
+                    })
+
 public class Associate {
 	
 	@Id
