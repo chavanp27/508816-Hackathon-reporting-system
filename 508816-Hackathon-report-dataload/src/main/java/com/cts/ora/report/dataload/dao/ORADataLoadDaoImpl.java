@@ -85,7 +85,7 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		logger.info("Into geAllAssociates");
 		List<Associate> associates = null;
 		 em = emf.createEntityManager();
-		associates =  em.createNativeQuery("select * from ora_outreach_associate",Associate.class).getResultList();
+		associates =  em.createNativeQuery("select a.* from ora_outreach_associate a inner join ora_ref_assc_bu b on a.bu_id=b.bu_id").getResultList();
 						 /*.createQuery("from ORA_OUTREACH_ASSOCIATE", Associate.class)
 					     .setFirstResult(0)
 					     .getResultList();*/
@@ -100,7 +100,7 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		logger.info("Into geAllBusinessUnits");
 		List<BusinessUnit> buList = null;
 		 em = emf.createEntityManager();
-		 buList = (List<BusinessUnit>) em.createNativeQuery("select * from ora_ref_assc_bu").getResultList();
+		 buList = em.createNativeQuery("select * from ora_ref_assc_bu").getResultList();
 		
 		//associates = ascRepo.findAllAssociates();
 		logger.info("Out of geAllBusinessUnits");

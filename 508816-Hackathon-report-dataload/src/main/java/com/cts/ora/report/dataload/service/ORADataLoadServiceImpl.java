@@ -95,6 +95,50 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		logger.info("Out of loadAssociateData");
 		return statusCode;
 	}
+	
+	private Integer loadEventSummaryData(ORAFile eventSummaryFile) {
+		logger.info("Into loadAssociateData");
+		Integer statusCode = -1;
+		List<Associate> ascLst=null;
+		try{
+			if(eventSummaryFile!=null && eventSummaryFile.getFileLoc()!=null && !"".equals(eventSummaryFile.getFileLoc())){
+				ascLst = parseAssociateInputFile(eventSummaryFile.getFileLoc());
+				oraDataLoadDao.saveAssociates(ascLst);
+				statusCode = 1;
+			}
+				
+		}catch(ORAException e){
+			logger.error("Exception in loadAssociateData->"+e);
+			
+		}catch (Exception e) {
+			logger.error("Exception in loadAssociateData->"+e);
+		}
+				
+		logger.info("Out of loadAssociateData");
+		return statusCode;
+	}
+	
+	private Integer loadEventDetailData(ORAFile eventDetailFile) {
+		logger.info("Into loadAssociateData");
+		Integer statusCode = -1;
+		List<Associate> ascLst=null;
+		try{
+			if(eventDetailFile!=null && eventDetailFile.getFileLoc()!=null && !"".equals(eventDetailFile.getFileLoc())){
+				ascLst = parseAssociateInputFile(eventDetailFile.getFileLoc());
+				oraDataLoadDao.saveAssociates(ascLst);
+				statusCode = 1;
+			}
+				
+		}catch(ORAException e){
+			logger.error("Exception in loadAssociateData->"+e);
+			
+		}catch (Exception e) {
+			logger.error("Exception in loadAssociateData->"+e);
+		}
+				
+		logger.info("Out of loadAssociateData");
+		return statusCode;
+	}
 
 	
 	private List<Associate> parseAssociateInputFile(String filePath){
@@ -224,6 +268,8 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	public static void main(String[] args){
 		String fp = "C:\\Users\\hp\\Desktop\\Cognizant FSE\\Input Data\\Associate Details.xlsx";
 		//String fp = "/Volumes/DATA/test/fse_input/AssociateDetails.xlsx";
+		//String evtInfoFp = "/Volumes/DATA/test/fse_input/OutReach Event Information.xlsx";
+		//String entSummFp = "/Volumes/DATA/test/fse_input/Outreach Events Summary.xlsx";
 		
 		ORADataLoadServiceImpl srv = new ORADataLoadServiceImpl();
 		srv.parseAssociateInputFile(fp);
@@ -234,6 +280,12 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	public List<Associate> getAssociates() {
 		logger.info("Into getAssociates");
 		return oraDataLoadDao.geAllAssociates();
+	}
+	
+	@Override
+	public List<BusinessUnit> getBusinessUnits() {
+		logger.info("Into getBusinessUnits");
+		return oraDataLoadDao.geAllBusinessUnits();
 	}
 
 	@Override

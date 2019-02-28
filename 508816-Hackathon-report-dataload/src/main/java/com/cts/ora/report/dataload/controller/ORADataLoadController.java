@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cts.ora.report.common.util.ORAMessageUtil;
 import com.cts.ora.report.common.vo.ORAResponse;
 import com.cts.ora.report.dataload.domain.Associate;
+import com.cts.ora.report.dataload.domain.BusinessUnit;
 import com.cts.ora.report.dataload.service.ORADataLoadService;
 import com.cts.ora.report.dataload.vo.ORADataLoadRequest;
-
 
 @RestController
 @RequestMapping("/api")
@@ -29,11 +29,19 @@ public class ORADataLoadController {
 	@Autowired
 	ORADataLoadService service;
 	
-	@GetMapping("/hello")
+	@GetMapping("/associates/get")
 	@ResponseBody
-	public List<Associate> helloWorld(){
-		logger.info("Hello in controller");
+	public List<Associate> getAssociates(){
+		logger.info("In getAssociates");
 		return service.getAssociates();
+		
+	}
+	
+	@GetMapping("/bu/get")
+	@ResponseBody
+	public List<BusinessUnit> getBusinessUnits(){
+		logger.info("In getBusinessUnits");
+		return service.getBusinessUnits();
 		
 	}
 	
