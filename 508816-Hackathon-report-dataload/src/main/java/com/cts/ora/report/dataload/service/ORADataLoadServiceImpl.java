@@ -1,6 +1,9 @@
 package com.cts.ora.report.dataload.service;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +18,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.cts.ora.report.common.util.JSONConverter;
 import com.cts.ora.report.common.util.ORAMessageUtil;
 import com.cts.ora.report.common.vo.ORAResponse;
 import com.cts.ora.report.dataload.dao.ORADataLoadDao;
@@ -23,6 +28,7 @@ import com.cts.ora.report.dataload.domain.Associate;
 import com.cts.ora.report.dataload.domain.BusinessUnit;
 import com.cts.ora.report.dataload.vo.ORADataLoadRequest;
 import com.cts.ora.report.exception.ORAException;
+import com.cts.ora.report.file.vo.FileUploadResponse;
 import com.cts.ora.report.file.vo.ORAFile;
 
 @Component
@@ -159,6 +165,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			}
 			if(existingAssociates!=null ){
 				buList = oraDataLoadDao.getAllBusinessUnits();
+				logger.info("buList:"+JSONConverter.toString(buList));
 			}
 			
 			for (int r = 1; r < rows; r++) {
@@ -166,8 +173,9 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 				if (row != null) {
 					String empId = isValidCell(row.getCell(0))?row.getCell(0).getRawValue():"-1";
 					String buName = isValidCell(row.getCell(4))?row.getCell(4).getRichStringCellValue().getString():null;
-					if(isAssociateExists(existingAssociates,Long.parseLong(empId)) 
+					if(isAssociateExists(existingAssociates,Integer.parseInt(empId)) 
 								&& noChangeInDept(existingAssociates,Long.parseLong(empId),buName)){
+						logger.info("No change:"+empId+buName);
 						continue;
 					}
 					String name = isValidCell(row.getCell(1))?row.getCell(1).getRichStringCellValue().getString():null;
@@ -175,14 +183,16 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					//String loc = isValidCell(row.getCell(3))?row.getCell(3).getRichStringCellValue().getString():null;
 
 					a = new Associate();
-					a.setId(Long.parseLong(empId+""));
+					a.setId(Integer.parseInt(empId+""));
 					a.setAscName(name);
 					a.setDesignation(designation);
 					
 					BusinessUnit bu = new BusinessUnit();
 					bu.setName(buName);
 					if (buList != null) {
+						logger.info("BU Exists:"+empId+buName);
 						if (buList.contains(bu)) {
+							logger.info("BU Exists222:"+empId+buName);
 							a.setBuExists(Boolean.TRUE);
 							bu = buList.get(buList.indexOf(bu));
 						} else {
@@ -219,9 +229,9 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		return ascLst;
 	}
 	
-	private boolean isAssociateExists(List<Associate> existingAssociates,Long empId){
+	private boolean isAssociateExists(List<Associate> existingAssociates,Integer empId){
 		if(existingAssociates!=null && existingAssociates.size()>0){
-			return existingAssociates.stream().map(a->a.getId()).filter(id->(empId>0 && id.longValue()==empId.longValue())).count()>0?true:false;
+			return existingAssociates.stream().map(a->a.getId()).filter(id->(empId>0 && id.equals(empId))).count()>0?true:false;
 		}else{
 			return false;
 		}
@@ -229,8 +239,9 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	
 	private boolean noChangeInDept(List<Associate> existingAssociates,Long empId,String buName){
 		if(existingAssociates!=null && existingAssociates.size()>0){
+			logger.info("noChangeInDept->"+buName);
 			return existingAssociates.stream().filter(e->e.getId().equals(empId))
-								.findFirst().map(a->a.getBu()).filter(bu->(bu!=null && bu.getName().equals(buName))).isPresent()?true:false;
+					.findFirst().map(a->a.getBu()).filter(bu->(bu.getName().equals(buName))).isPresent()?true:false;
 		}else{
 			return false;
 		}
@@ -295,5 +306,34 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	public ORAResponse fetchDataLoadLog(ORADataLoadRequest request) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public FileUploadResponse uploadFile(MultipartFile file) {
+		logger.info("Into uploadFile");
+		FileUploadResponse resp =new FileUploadResponse();
+		ORAFile uploadedFile = new ORAFile();
+		
+		try {
+			// Get the file and save it
+			byte[] bytes = file.getBytes();
+			Path path = Paths.get(UPLOAD_COMMON_PATH + file.getOriginalFilename());
+			Files.write(path, bytes);
+			
+			//Entry into ora_sys_incoming_files
+			//Get the FIle ID and set it in resp
+			//uploadedFile.setFileId(fileId);
+			uploadedFile.setFileLoc(UPLOAD_COMMON_PATH + file.getOriginalFilename());
+			resp.setUploadFile(uploadedFile);
+			
+			ORAMessageUtil.setSuccessMessage(resp);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+			ORAMessageUtil.setFailureMessage(resp);
+		}
+        
+        logger.info("Out of uploadFile");
+        return resp;
+        
 	}
 }

@@ -84,7 +84,7 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		
 		 try {
 			em = emf.createEntityManager();
-			 //associates =   em.createQuery("SELECT a FROM com.cts.ora.report.dataload.domain.Associate a, com.cts.ora.report.dataload.domain.BusinessUnit b WHERE a.bu.buId=1", Associate.class).getResultList();
+			 //associates =   em.createQuery("SELECT a FROM com.cts.ora.report.dataload.domain.Associate a JOIN com.cts.ora.report.dataload.domain.BusinessUnit b ON a.bu=b.buId", Associate.class).getResultList();
 				
 			 String sql = "select a.ASC_NAME,a.asc_id,a.created_date,a.designation,a.is_poc,a.is_volunteer,a.bu_id AS asc_bId  from ora_outreach_associate a inner join ora_ref_assc_bu b on a.bu_id=b.bu_id";
 			 associates =   em.createNativeQuery(sql,"AssociateMapping").getResultList();
@@ -110,6 +110,8 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 	@Override
 	public List<BusinessUnit> getAllBusinessUnits() {
 		logger.info("Into geAllBusinessUnits");
+		
+		
 		List<BusinessUnit> buList = null;
 		 em = emf.createEntityManager();
 		 buList = em.createNativeQuery("select * from ora_ref_assc_bu").getResultList();

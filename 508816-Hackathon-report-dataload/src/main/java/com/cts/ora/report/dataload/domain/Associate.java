@@ -9,6 +9,9 @@ import javax.persistence.FieldResult;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.SecondaryTable;
+import javax.persistence.SecondaryTables;
 import javax.persistence.SqlResultSetMapping;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -38,11 +41,15 @@ import lombok.ToString;
 				@FieldResult(name = "createdDate", column = "created_date"),
 				@FieldResult(name = "designation", column = "designation"),
 				@FieldResult(name = "bu", column = "asc_bId") }) })
+/*@SecondaryTables({
+@SecondaryTable(name="EventInfo", pkJoinColumns={@PrimaryKeyJoinColumn(name="asc_id")}),
+@SecondaryTable(name="DOG_SECONDARY_B", pkJoinColumns={@PrimaryKeyJoinColumn(name="asc_id")})
+})*/
 public class Associate {
 	
 	@Id
 	@Column(name="asc_id")
-	private Long id;
+	private Integer id;
 	
 	@Column @NotBlank
 	private String ascName;
@@ -67,7 +74,7 @@ public class Associate {
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private Date createdDate;
 	
-	@Transient
+	@Transient @JsonIgnore
 	private boolean isBuExists;
 	
 	//@OneToMany
