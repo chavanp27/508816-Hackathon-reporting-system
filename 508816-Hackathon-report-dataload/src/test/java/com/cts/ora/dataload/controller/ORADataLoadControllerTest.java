@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.context.WebApplicationContext;
 
 import com.cts.ora.report.dataload.controller.ORADataLoadController;
 
@@ -21,7 +21,7 @@ public class ORADataLoadControllerTest {
 	Logger logger = LoggerFactory.getLogger(ORADataLoadControllerTest.class);
 	
 	@Autowired
-    protected WebApplicationContext wac;
+    protected ApplicationContext ac;
 	
 	@Autowired
 	ORADataLoadController controller;

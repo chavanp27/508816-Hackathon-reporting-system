@@ -8,7 +8,7 @@ import javax.persistence.EntityResult;
 import javax.persistence.FieldResult;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.SqlResultSetMapping;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -20,48 +20,37 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 @Entity(name="ora_outreach_associate") @Table(name="ora_outreach_associate")
-@Getter @Setter @ToString
+@Getter @Setter @ToString(exclude= {"bu"})
 @EqualsAndHashCode(of= {"id","name","designation"})
-@SqlResultSetMapping(
-        name = "AssociateMapping",
-        entities ={ @EntityResult(
-                entityClass = com.cts.ora.report.dataload.domain.Associate.class,
-                fields = {
-	                    @FieldResult(name = "id", column = "asc_id"),
-	                    @FieldResult(name = "name", column = "name"),
-	                    @FieldResult(name = "designation", column = "designation"),
-	                    @FieldResult(name = "isVolunteer", column = "is_volunteer"),
-	                    @FieldResult(name = "isPOC", column = "is_poc"),
-	                    @FieldResult(name = "createdDate", column = "created_date")
-	                    //,@FieldResult(name = "bu.buId", column = "bu_id")
-                    }),
-                    @EntityResult(
-                entityClass = com.cts.ora.report.dataload.domain.BusinessUnit.class,
-                fields = {
-	                    @FieldResult(name = "buId", column = "bu_id")
-                    })
-                    
-                    })
-
+@SqlResultSetMapping(name = "AssociateMapping", entities = {
+		@EntityResult(entityClass = com.cts.ora.report.dataload.domain.Associate.class, fields = {
+				@FieldResult(name = "id", column = "asc_id"), @FieldResult(name = "ascName", column = "ASC_NAME"),
+				@FieldResult(name = "isVolunteer", column = "is_volunteer"),
+				@FieldResult(name = "isPOC", column = "is_poc"),
+				@FieldResult(name = "createdDate", column = "created_date"),
+				@FieldResult(name = "designation", column = "designation"),
+				@FieldResult(name = "bu", column = "asc_bId") }) })
 public class Associate {
 	
 	@Id
 	@Column(name="asc_id")
-	private Integer id;
+	private Long id;
 	
 	@Column @NotBlank
-	private String name;
+	private String ascName;
 	
 	@Column
 	private String designation;
 	
-	@ManyToOne
+	@OneToOne @JsonIgnore 
 	@JoinColumn(name="buId",insertable=true,updatable=true)
 	private BusinessUnit bu;
 	
@@ -80,5 +69,8 @@ public class Associate {
 	
 	@Transient
 	private boolean isBuExists;
+	
+	//@OneToMany
+	//private Set<EventInfo> events;
 
 }

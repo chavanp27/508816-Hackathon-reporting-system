@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.cts.ora.report.common.util.JSONConverter;
 import com.cts.ora.report.common.util.ORAMessageUtil;
 import com.cts.ora.report.common.vo.ORAResponse;
 import com.cts.ora.report.dataload.dao.ORADataLoadDao;
@@ -156,12 +155,10 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			logger.info("Associate Sheet has " + rows+ " row(s).");
 			if(rows>0){
 				//Fetch existing employees
-				existingAssociates = oraDataLoadDao.geAllAssociates();
-				logger.info("existingAssociates==" + existingAssociates);
+				existingAssociates = oraDataLoadDao.getAllAssociates();
 			}
 			if(existingAssociates!=null ){
-				buList = oraDataLoadDao.geAllBusinessUnits();
-				logger.info("buList==" + buList);
+				buList = oraDataLoadDao.getAllBusinessUnits();
 			}
 			
 			for (int r = 1; r < rows; r++) {
@@ -178,19 +175,26 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					//String loc = isValidCell(row.getCell(3))?row.getCell(3).getRichStringCellValue().getString():null;
 
 					a = new Associate();
-					a.setId(Integer.parseInt(empId+""));
-					a.setName(name);
+					a.setId(Long.parseLong(empId+""));
+					a.setAscName(name);
 					a.setDesignation(designation);
 					
 					BusinessUnit bu = new BusinessUnit();
 					bu.setName(buName);
-					if(buList!=null && buList.contains(bu)){
-						a.setBuExists(Boolean.TRUE);
-						bu = buList.get(buList.indexOf(bu));
-					}else{
-						bu.setDescription(buName);
+					if (buList != null) {
+						if (buList.contains(bu)) {
+							a.setBuExists(Boolean.TRUE);
+							bu = buList.get(buList.indexOf(bu));
+						} else {
+							bu.setDescription(buName);
+							buList.add(bu);
+						}
+
+					}else {
+						buList = new ArrayList<>();
 						buList.add(bu);
 					}
+					
 					a.setBu(bu);
 					a.setIsPOC(Boolean.FALSE);
 					a.setIsVolunteer(Boolean.FALSE);
@@ -198,7 +202,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					ascLst.add(a);
 				}
 			}
-			logger.info("Out of parseAssociateInputFile"+JSONConverter.toString(ascLst));
+			//logger.info("Out of parseAssociateInputFile"+JSONConverter.toString(ascLst));
 			
 			}catch(Exception e){
 				e.printStackTrace();
@@ -212,19 +216,12 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					}
 				}
 			}
-		logger.info("Input data=="+ascLst);
 		return ascLst;
 	}
 	
 	private boolean isAssociateExists(List<Associate> existingAssociates,Long empId){
 		if(existingAssociates!=null && existingAssociates.size()>0){
-			for(Associate asc:existingAssociates) {
-				if(empId!=null && asc.getId()!=null && asc.getId().equals(empId.intValue())) {
-					return true;
-				}
-			}
-			return false;
-			//return existingAssociates.stream().map(a->a.getId()).filter(id->(empId>0 && id.longValue()==empId.longValue())).count()>0?true:false;
+			return existingAssociates.stream().map(a->a.getId()).filter(id->(empId>0 && id.longValue()==empId.longValue())).count()>0?true:false;
 		}else{
 			return false;
 		}
@@ -285,13 +282,13 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	@Override
 	public List<Associate> getAssociates() {
 		logger.info("Into getAssociates");
-		return oraDataLoadDao.geAllAssociates();
+		return oraDataLoadDao.getAllAssociates();
 	}
 	
 	@Override
 	public List<BusinessUnit> getBusinessUnits() {
 		logger.info("Into getBusinessUnits");
-		return oraDataLoadDao.geAllBusinessUnits();
+		return oraDataLoadDao.getAllBusinessUnits();
 	}
 
 	@Override

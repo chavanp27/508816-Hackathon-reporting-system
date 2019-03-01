@@ -7,9 +7,9 @@ import com.cts.ora.report.dataload.domain.BusinessUnit;
 
 public interface ORADataLoadDao {
 	
-	List<Associate> geAllAssociates();
+	List<Associate> getAllAssociates();
 	
-	List<BusinessUnit> geAllBusinessUnits();
+	List<BusinessUnit> getAllBusinessUnits();
 	
 	void saveAssociates(List<Associate> associates);
 	

@@ -62,10 +62,7 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 				e1.printStackTrace();
 			}
 		}
-		
-	    
 		logger.info("Out of saveAssociates");
-		
 	}
 
 
@@ -81,32 +78,37 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Associate> geAllAssociates() {
+	public List<Associate> getAllAssociates() {
 		logger.info("Into geAllAssociates");
 		List<Associate> associates = null;
-		 em = emf.createEntityManager();
-		 //associates =   em.createQuery("SELECT a FROM com.cts.ora.report.dataload.domain.Associate a, com.cts.ora.report.dataload.domain.BusinessUnit b WHERE a.bu.buId=1", Associate.class).getResultList();
-		 //String sql = "select a.name,a.asc_id,b.bu_id,a.created_date,a.designation,a.is_poc,a.is_volunteer from ora_outreach_associate a inner join ora_ref_assc_bu b on a.bu_id=b.bu_id";
-			
-		 String sql = "select a.* from ora_outreach_associate a inner join ora_ref_assc_bu b on a.bu_id=b.bu_id";
-		 associates =   em.createNativeQuery(sql).getResultList();
-
-		//associates = ascRepo.findAllAssociates();
 		
-		/*CriteriaBuilder cb = em.getCriteriaBuilder();
-		CriteriaQuery<Associate> cq = cb.createQuery(Associate.class);
-		Root<Associate> asc = cq.from(Associate.class);
-		cq.select(asc);
-		TypedQuery<Associate> q = em.createQuery(cq);
-		associates = q.getResultList();*/
-		em.close();
+		 try {
+			em = emf.createEntityManager();
+			 //associates =   em.createQuery("SELECT a FROM com.cts.ora.report.dataload.domain.Associate a, com.cts.ora.report.dataload.domain.BusinessUnit b WHERE a.bu.buId=1", Associate.class).getResultList();
+				
+			 String sql = "select a.ASC_NAME,a.asc_id,a.created_date,a.designation,a.is_poc,a.is_volunteer,a.bu_id AS asc_bId  from ora_outreach_associate a inner join ora_ref_assc_bu b on a.bu_id=b.bu_id";
+			 associates =   em.createNativeQuery(sql,"AssociateMapping").getResultList();
+
+			 //associates = ascRepo.findAllAssociates();
+			/*CriteriaBuilder cb = em.getCriteriaBuilder();
+			CriteriaQuery<Associate> cq = cb.createQuery(Associate.class);
+			Root<Associate> asc = cq.from(Associate.class);
+			cq.select(asc);
+			TypedQuery<Associate> q = em.createQuery(cq);
+			associates = q.getResultList();*/
+			
+			 em.close();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			throw new ORAException("0001","Error during getAllAssociates",e);
+		}
 		logger.info("Out of geAllAssociates");
 		return associates;
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<BusinessUnit> geAllBusinessUnits() {
+	public List<BusinessUnit> getAllBusinessUnits() {
 		logger.info("Into geAllBusinessUnits");
 		List<BusinessUnit> buList = null;
 		 em = emf.createEntityManager();

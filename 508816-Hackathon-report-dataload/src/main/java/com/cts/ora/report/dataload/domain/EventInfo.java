@@ -21,16 +21,16 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Entity(name="ora_outreach_event_info")
+//@Entity(name="ora_outreach_event_info")
 @Getter @Setter @ToString
 public class EventInfo {
 	
-	@Id
+/*	@Id
 	private String eventId;
 	
 	@OneToOne
 	@JoinColumn(name="id")
-	private Long projectId;
+	private Project project;
 	
 	@NotBlank
 	private String title;
@@ -64,7 +64,7 @@ public class EventInfo {
 	@Column @CreationTimestamp
 	@Temporal(TemporalType.DATE)
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	private Date createdDate;
+	private Date createdDate;*/
 	
 	private String createdBy;
 
