@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -23,9 +25,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.cts.ora.report.common.util.JSONConverter;
 import com.cts.ora.report.common.util.ORAMessageUtil;
 import com.cts.ora.report.common.vo.ORAResponse;
+import com.cts.ora.report.constants.ORADataLoadConstants;
 import com.cts.ora.report.dataload.dao.ORADataLoadDao;
 import com.cts.ora.report.dataload.domain.Associate;
 import com.cts.ora.report.dataload.domain.BusinessUnit;
+import com.cts.ora.report.dataload.domain.IncomingFiles;
 import com.cts.ora.report.dataload.vo.ORADataLoadRequest;
 import com.cts.ora.report.exception.ORAException;
 import com.cts.ora.report.file.vo.FileUploadResponse;
@@ -49,14 +53,16 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		
 		try {
 			//Populate ora_sys_incoming_files table - ASync call
-			//populateIncomingTable();
+			List<ORAFile> uploadFiles = Stream.of(request.getAscFile(),request.getEventSummaryFile()
+													,request.getEventDetailFile()).collect(Collectors.toList());
+			createIncomingFileEntry(uploadFiles);
 			
-			//Associate Data
-			updateDataLoadStatus(request.getAscFile(),loadAssociateData(request.getAscFile()));
+			//Load Associate Data
+			updateIncomingFileStatus(request.getAscFile().getFileId(), loadAssociateData(request.getAscFile()));
 			//Event Summary File
-			updateDataLoadStatus(request.getEventSummaryFile(),loadAssociateData(request.getEventSummaryFile()));
+			updateIncomingFileStatus(request.getEventSummaryFile().getFileId(), loadAssociateData(request.getAscFile()));
 			//Event Detail File
-			updateDataLoadStatus(request.getEventDetailFile(),loadAssociateData(request.getEventDetailFile()));
+			updateIncomingFileStatus(request.getEventDetailFile().getFileId(), loadAssociateData(request.getAscFile()));
 			
 			ORAMessageUtil.setSuccessMessage(response);
 		}catch(ORAException e){
@@ -68,6 +74,53 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		}
 		logger.info("out of loadIncomingFiles");
 		return response;
+	}
+	
+	private void createIncomingFileEntry(List<ORAFile> uploadFiles){
+		logger.info("Into updateIncomingTable"+uploadFiles);
+		List<IncomingFiles> incomingFiles=new ArrayList<>();
+		IncomingFiles incFile = null;
+		for(ORAFile file:uploadFiles){
+			if(isUploadFileValid(file)){
+				incFile = new IncomingFiles();
+				incFile.setFileLoc(file.getFileLoc());
+				incFile.setFileName(file.getFileLoc().substring(file.getFileLoc().lastIndexOf("\\")+1));
+				file.setFileName(file.getFileLoc().substring(file.getFileLoc().lastIndexOf("\\")+1));
+				incFile.setStatus(ORADataLoadConstants.NEW);
+				incFile.setRepType(oraDataLoadDao.getReportTypeByName("ASSOCIATE_INFO"));
+				incomingFiles.add(incFile);
+			}
+		}
+		oraDataLoadDao.createIncomingFiles(incomingFiles);
+		logger.info("incomingFiles saved:"+incomingFiles);
+		
+		incomingFiles.stream().forEach(i->{
+			uploadFiles.stream().filter(f->f.getFileName().equals(i.getFileName()))
+								.findFirst().get().setFileId(i.getInboundId());
+		});
+		logger.info("out of updateIncomingTable");
+	}
+	
+	private void updateIncomingFileStatus(Long incomingFileId, Integer statusCode){
+		logger.info("Into updateIncomingFileStatus:"+statusCode);
+		
+		logger.info("IncomingFileId:"+incomingFileId);
+		logger.info("statusCode:"+statusCode);
+		String status = null;
+		if(statusCode>0){
+			status=ORADataLoadConstants.DATALOAD_COMPLETE;
+		}else{
+			//Failed
+			status=ORADataLoadConstants.DATALOAD_FAIL;
+		}
+		if(incomingFileId!=null){
+			oraDataLoadDao.updateIncomingFileStatus(incomingFileId, status);
+		}
+		logger.info("out of updateIncomingFileStatus");
+	}
+	
+	private boolean isUploadFileValid(ORAFile file){
+		return (file!=null && null!=file.getFileLoc())?true:false;
 	}
 	
 	private void updateDataLoadStatus(ORAFile file, Integer statusCode){
@@ -162,10 +215,11 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			if(rows>0){
 				//Fetch existing employees
 				existingAssociates = oraDataLoadDao.getAllAssociates();
+				logger.info("existingAssociates:"+JSONConverter.toString(existingAssociates));
 			}
 			if(existingAssociates!=null ){
 				buList = oraDataLoadDao.getAllBusinessUnits();
-				logger.info("buList:"+JSONConverter.toString(buList));
+				//logger.info("buList:"+JSONConverter.toString(buList));
 			}
 			
 			for (int r = 1; r < rows; r++) {
@@ -173,9 +227,8 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 				if (row != null) {
 					String empId = isValidCell(row.getCell(0))?row.getCell(0).getRawValue():"-1";
 					String buName = isValidCell(row.getCell(4))?row.getCell(4).getRichStringCellValue().getString():null;
-					if(isAssociateExists(existingAssociates,Integer.parseInt(empId)) 
-								&& noChangeInDept(existingAssociates,Long.parseLong(empId),buName)){
-						logger.info("No change:"+empId+buName);
+					if(isAssociateExists(existingAssociates,Integer.parseInt(empId))) {
+								//&& noChangeInDept(existingAssociates,Long.parseLong(empId),buName)){
 						continue;
 					}
 					String name = isValidCell(row.getCell(1))?row.getCell(1).getRichStringCellValue().getString():null;
@@ -189,14 +242,13 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					
 					BusinessUnit bu = new BusinessUnit();
 					bu.setName(buName);
+					bu.setDescription(buName);
+					//logger.info("BULst:"+JSONConverter.toString(buList));
 					if (buList != null) {
-						logger.info("BU Exists:"+empId+buName);
-						if (buList.contains(bu)) {
-							logger.info("BU Exists222:"+empId+buName);
+						if (buList.indexOf(bu)> -1) {
 							a.setBuExists(Boolean.TRUE);
 							bu = buList.get(buList.indexOf(bu));
 						} else {
-							bu.setDescription(buName);
 							buList.add(bu);
 						}
 
@@ -241,7 +293,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		if(existingAssociates!=null && existingAssociates.size()>0){
 			logger.info("noChangeInDept->"+buName);
 			return existingAssociates.stream().filter(e->e.getId().equals(empId))
-					.findFirst().map(a->a.getBu()).filter(bu->(bu.getName().equals(buName))).isPresent()?true:false;
+					.findFirst().map(a->a.getBu()).filter(bu->(!bu.getName().equals(buName))).isPresent()?true:false;
 		}else{
 			return false;
 		}

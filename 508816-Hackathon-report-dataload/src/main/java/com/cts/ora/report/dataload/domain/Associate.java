@@ -9,11 +9,7 @@ import javax.persistence.FieldResult;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.SecondaryTable;
-import javax.persistence.SecondaryTables;
 import javax.persistence.SqlResultSetMapping;
-import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
@@ -30,21 +26,18 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Entity(name="ora_outreach_associate") @Table(name="ora_outreach_associate")
+@Entity(name="ora_outreach_associate")
 @Getter @Setter @ToString(exclude= {"bu"})
 @EqualsAndHashCode(of= {"id","name","designation"})
 @SqlResultSetMapping(name = "AssociateMapping", entities = {
 		@EntityResult(entityClass = com.cts.ora.report.dataload.domain.Associate.class, fields = {
-				@FieldResult(name = "id", column = "asc_id"), @FieldResult(name = "ascName", column = "ASC_NAME"),
+				@FieldResult(name = "id", column = "asc_id"), 
+				@FieldResult(name = "ascName", column = "ASC_NAME"),
 				@FieldResult(name = "isVolunteer", column = "is_volunteer"),
 				@FieldResult(name = "isPOC", column = "is_poc"),
 				@FieldResult(name = "createdDate", column = "created_date"),
 				@FieldResult(name = "designation", column = "designation"),
 				@FieldResult(name = "bu", column = "asc_bId") }) })
-/*@SecondaryTables({
-@SecondaryTable(name="EventInfo", pkJoinColumns={@PrimaryKeyJoinColumn(name="asc_id")}),
-@SecondaryTable(name="DOG_SECONDARY_B", pkJoinColumns={@PrimaryKeyJoinColumn(name="asc_id")})
-})*/
 public class Associate {
 	
 	@Id

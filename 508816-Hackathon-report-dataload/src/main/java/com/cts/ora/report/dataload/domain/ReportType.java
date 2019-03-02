@@ -1,50 +1,41 @@
 package com.cts.ora.report.dataload.domain;
 
-import java.util.Set;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 
 import org.hibernate.annotations.GenericGenerator;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
-@Entity()
+@Entity
 @Table(
-		name="ora_ref_assc_bu", 
+		name="ORA_SYS_REPORT_TYPE", 
         uniqueConstraints=
-            @UniqueConstraint(columnNames={"name"})
+            @UniqueConstraint(columnNames={"reportType"})
     )
-@Data @ToString
-@EqualsAndHashCode(of= {"name"})
-public class BusinessUnit {
+@Getter @Setter @ToString @EqualsAndHashCode(of={"reportType"})
+public class ReportType {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO,generator="native")
 	@GenericGenerator(
 	    name = "native", strategy = "native"
 	)
-	private Integer buId;
+	private Integer repId;
 	
 	@Column @NotBlank
-	private String name;
+	private String reportType;
 	
 	@Column
 	private String description;
-	
-	@OneToMany(mappedBy="bu",fetch=FetchType.LAZY) @JsonIgnore
-	private Set<Associate> associates; 
 
 }

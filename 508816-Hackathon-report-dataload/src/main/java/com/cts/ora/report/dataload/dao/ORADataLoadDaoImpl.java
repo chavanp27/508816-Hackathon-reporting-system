@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 
 import com.cts.ora.report.dataload.domain.Associate;
 import com.cts.ora.report.dataload.domain.BusinessUnit;
+import com.cts.ora.report.dataload.domain.IncomingFiles;
+import com.cts.ora.report.dataload.domain.ReportType;
 import com.cts.ora.report.dataload.repository.AssociateRepository;
 import com.cts.ora.report.exception.ORAException;
 
@@ -46,20 +48,23 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 			for(BusinessUnit bu:bus){
 				em.persist(bu);
 			}
-			
 			for(Associate a:associates) {
 				em.persist(a);
 			}
-		    //utx.commit();
-			em.getTransaction().commit();
+		    em.getTransaction().commit();
 			em.close();
 			
 		}catch(Exception e) {
+			logger.error("Error during saveAssociates:"+e.getMessage());
 			try {
 				em.getTransaction().rollback();
 				throw new ORAException("DATA_SAVE_FAILURE", "Associate Data not saved", e);
 			} catch (Exception e1) {
-				e1.printStackTrace();
+				logger.error("Error during rollback");
+			}finally {
+				if(em!=null){
+					em.close();
+				}
 			}
 		}
 		logger.info("Out of saveAssociates");
@@ -101,26 +106,106 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			throw new ORAException("0001","Error during getAllAssociates",e);
+		}finally {
+			if(em!=null){
+				em.close();
+			}
 		}
 		logger.info("Out of geAllAssociates");
 		return associates;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<BusinessUnit> getAllBusinessUnits() {
 		logger.info("Into geAllBusinessUnits");
-		
-		
-		List<BusinessUnit> buList = null;
-		 em = emf.createEntityManager();
-		 buList = em.createNativeQuery("select * from ora_ref_assc_bu").getResultList();
-		 //buList = em.createQuery("SELECT b FROM BusinessUnit b",BusinessUnit.class).getResultList();
-		
-		 //em.close();
-		//associates = ascRepo.findAllAssociates();
+		List<BusinessUnit> buList;
+		try {
+			buList = null;
+			em = emf.createEntityManager();
+			// buList = em.createNativeQuery("select * from ora_ref_assc_bu",BusinessUnit.class).getResultList();
+			buList = em.createQuery("SELECT b FROM BusinessUnit b", BusinessUnit.class).getResultList();
+		} catch (Exception e) {
+			logger.error("Error in getAllBusinessUnits:"+e.getMessage());
+			throw new ORAException();
+		}finally {
+			if(em!=null){
+				em.close();
+			}
+		}
 		logger.info("Out of geAllBusinessUnits");
 		return buList;
+	}
+	
+	@Override
+	public ReportType getReportTypeByName(String name) {
+		logger.info("Into getReportTypeByName");
+		ReportType reportType=null;
+		
+		try {
+			em = emf.createEntityManager();
+			// buList = em.createNativeQuery("select * from ora_ref_assc_bu",BusinessUnit.class).getResultList();
+			reportType = em.createQuery("SELECT r FROM ReportType r WHERE r.reportType = :repType", ReportType.class)
+							.setParameter("repType", name).getSingleResult();
+		} catch (Exception e) {
+			logger.error("Error in getReportTypeByName:"+e.getMessage());
+			throw new ORAException();
+		}finally {
+			if(em!=null){
+				em.close();
+			}
+		}
+		logger.info("Out of getReportTypeByName");
+		return reportType;
+	}
+
+
+	@Override
+	public List<IncomingFiles> createIncomingFiles(List<IncomingFiles> incomingFiles) {
+		logger.info("Into updateIncomingFiles:"+incomingFiles);
+		
+		try {
+			em = emf.createEntityManager();
+			em.getTransaction().begin();
+			for(IncomingFiles file:incomingFiles){
+				em.persist(file);
+				em.refresh(file);
+			}
+			em.getTransaction().commit();
+
+		} catch (Exception e) {
+			logger.error("Error in updateIncomingFiles:"+e.getMessage());
+			throw new ORAException("INCOMING_FILE_SAVE_FAILURE", "Incoming Files not saved", e);
+		}finally {
+			if(em!=null){
+				em.close();
+			}
+		}
+		logger.info("Out of updateIncomingFiles");
+		return incomingFiles;
+	}
+	
+	@Override
+	public void updateIncomingFileStatus(Long fileId, String status) {
+		logger.info("Into updateIncomingFileStatus");
+		
+		try {
+			em = emf.createEntityManager();
+			em.getTransaction().begin();
+			IncomingFiles file = em.find(IncomingFiles.class, new Long(fileId));
+			file.setStatus(status);
+			em.merge(file);
+			em.getTransaction().commit();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error("Error in updateIncomingFileStatus:"+e);
+			throw new ORAException("INCOMING_FILE_STATUS_FAILURE", "Incoming Files status update failure", e);
+		}finally {
+			if(em!=null){
+				em.close();
+			}
+		}
+		logger.info("Out of updateIncomingFileStatus");
 	}
 
 }
