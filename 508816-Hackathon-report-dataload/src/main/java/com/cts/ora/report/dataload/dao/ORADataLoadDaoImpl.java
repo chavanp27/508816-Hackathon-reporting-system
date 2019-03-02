@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import com.cts.ora.report.dataload.domain.Associate;
 import com.cts.ora.report.dataload.domain.BusinessUnit;
 import com.cts.ora.report.dataload.domain.IncomingFiles;
+import com.cts.ora.report.dataload.domain.Location;
 import com.cts.ora.report.dataload.domain.ReportType;
 import com.cts.ora.report.dataload.repository.AssociateRepository;
 import com.cts.ora.report.exception.ORAException;
@@ -31,9 +32,6 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 	
 	@Autowired
 	private AssociateRepository ascRepo;
-	
-	//@PersistenceContext	
-	//private EntityManager em;
 	
 	//@Autowired private SessionFactory sessionFactory;
 	
@@ -206,6 +204,13 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 			}
 		}
 		logger.info("Out of updateIncomingFileStatus");
+	}
+
+
+	@Override
+	public void saveLocation(List<Location> locations) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

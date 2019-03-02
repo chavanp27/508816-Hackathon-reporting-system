@@ -1,11 +1,19 @@
 package com.cts.ora.report.dataload.domain;
 
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.validation.constraints.NotBlank;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,20 +24,27 @@ import lombok.ToString;
 public class Location {
 	
 	@Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-	@Column(name="loc_id")
+	@GeneratedValue(strategy=GenerationType.AUTO,generator="native")
+	@GenericGenerator(name = "native", strategy = "native")
 	private Integer locId;
 	
-	@Column
-	private Integer countryId;
+	@ManyToOne
+	@JoinColumn(name="cntryId",insertable=true,updatable=true)
+	private Country countryId;
 	
-	@Column
-	private Integer stateId;
+	@ManyToOne
+	@JoinColumn(name="stateId",insertable=true,updatable=true)
+	private State sId;
 	
-	@Column
-	private Integer cityId;
+	@ManyToOne
+	@JoinColumn(name="cityId",insertable=true,updatable=true)
+	private City cId;
 	
-	@Column
-	private Integer resAreaId;
+	@ManyToOne
+	@JoinColumn(name="resAreaId",insertable=true,updatable=true)
+	private ResidenceArea resAreaId;
+	
+	@OneToMany(mappedBy="eventId") @JsonIgnore
+	private Set<EventInfo> events;
 
 }

@@ -29,6 +29,7 @@ import com.cts.ora.report.constants.ORADataLoadConstants;
 import com.cts.ora.report.dataload.dao.ORADataLoadDao;
 import com.cts.ora.report.dataload.domain.Associate;
 import com.cts.ora.report.dataload.domain.BusinessUnit;
+import com.cts.ora.report.dataload.domain.EventInfo;
 import com.cts.ora.report.dataload.domain.IncomingFiles;
 import com.cts.ora.report.dataload.vo.ORADataLoadRequest;
 import com.cts.ora.report.exception.ORAException;
@@ -60,9 +61,9 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			//Load Associate Data
 			updateIncomingFileStatus(request.getAscFile().getFileId(), loadAssociateData(request.getAscFile()));
 			//Event Summary File
-			updateIncomingFileStatus(request.getEventSummaryFile().getFileId(), loadAssociateData(request.getAscFile()));
+			updateIncomingFileStatus(request.getEventSummaryFile().getFileId(), loadEventSummaryData(request.getEventSummaryFile()));
 			//Event Detail File
-			updateIncomingFileStatus(request.getEventDetailFile().getFileId(), loadAssociateData(request.getAscFile()));
+			updateIncomingFileStatus(request.getEventDetailFile().getFileId(), loadEventDetailData(request.getEventDetailFile()));
 			
 			ORAMessageUtil.setSuccessMessage(response);
 		}catch(ORAException e){
@@ -103,7 +104,6 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	
 	private void updateIncomingFileStatus(Long incomingFileId, Integer statusCode){
 		logger.info("Into updateIncomingFileStatus:"+statusCode);
-		
 		logger.info("IncomingFileId:"+incomingFileId);
 		logger.info("statusCode:"+statusCode);
 		String status = null;
@@ -157,11 +157,11 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	private Integer loadEventSummaryData(ORAFile eventSummaryFile) {
 		logger.info("Into loadAssociateData");
 		Integer statusCode = -1;
-		List<Associate> ascLst=null;
+		List<EventInfo> eventInfoList=null;
 		try{
 			if(eventSummaryFile!=null && eventSummaryFile.getFileLoc()!=null && !"".equals(eventSummaryFile.getFileLoc())){
-				ascLst = parseAssociateInputFile(eventSummaryFile.getFileLoc());
-				oraDataLoadDao.saveAssociates(ascLst);
+				eventInfoList = parseEventSummaryInputFile(eventSummaryFile.getFileLoc());
+				//oraDataLoadDao.saveEventInfo(eventInfoList);
 				statusCode = 1;
 			}
 				
@@ -197,7 +197,6 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		logger.info("Out of loadAssociateData");
 		return statusCode;
 	}
-
 	
 	private List<Associate> parseAssociateInputFile(String filePath){
 		logger.info("Loading Associate Data");
@@ -264,8 +263,6 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					ascLst.add(a);
 				}
 			}
-			//logger.info("Out of parseAssociateInputFile"+JSONConverter.toString(ascLst));
-			
 			}catch(Exception e){
 				e.printStackTrace();
 				throw new ORAException();
@@ -279,6 +276,69 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 				}
 			}
 		return ascLst;
+	}
+	
+	private List<EventInfo> parseEventSummaryInputFile(String filePath){
+		logger.info("Into parseEventSummaryInputFile");
+		List<EventInfo> eventInfoList=new ArrayList<>();
+		EventInfo a=null;
+		List<Associate> existingAssociates=null;
+		List<BusinessUnit> buList = null;
+		XSSFWorkbook  wb=null;
+		
+		try {
+			wb = new XSSFWorkbook(filePath);
+			XSSFSheet sheet = wb.getSheetAt(0);
+			int rows = sheet.getPhysicalNumberOfRows();
+			logger.info("Event Summary Sheet has " + rows+ " row(s).");
+			if(rows>0){
+				//Fetch existing employees
+				existingAssociates = oraDataLoadDao.getAllAssociates();
+				logger.info("existingAssociates:"+JSONConverter.toString(existingAssociates));
+			}
+			if(existingAssociates!=null ){
+				buList = oraDataLoadDao.getAllBusinessUnits();
+				//logger.info("buList:"+JSONConverter.toString(buList));
+			}
+			
+			for (int r = 1; r < rows; r++) {
+				XSSFRow row = sheet.getRow(r);
+				if (row != null) {
+					String empId = isValidCell(row.getCell(0))?row.getCell(0).getRawValue():"-1";
+					String buName = isValidCell(row.getCell(4))?row.getCell(4).getRichStringCellValue().getString():null;
+					if(isAssociateExists(existingAssociates,Integer.parseInt(empId))) {
+								//&& noChangeInDept(existingAssociates,Long.parseLong(empId),buName)){
+						continue;
+					}
+					String name = isValidCell(row.getCell(1))?row.getCell(1).getRichStringCellValue().getString():null;
+					String designation = isValidCell(row.getCell(2))?row.getCell(2).getRichStringCellValue().getString():null;
+					//String loc = isValidCell(row.getCell(3))?row.getCell(3).getRichStringCellValue().getString():null;
+
+					a = new EventInfo();
+					
+					
+					BusinessUnit bu = new BusinessUnit();
+					
+					
+					eventInfoList.add(a);
+				}
+			}
+			//logger.info("Out of parseAssociateInputFile"+JSONConverter.toString(ascLst));
+			
+			}catch(Exception e){
+				logger.error("Error in parseEventSummaryInputFile:"+e);
+				throw new ORAException();
+			}finally {
+				if(wb!=null){
+					try {
+						wb.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		logger.info("Out of parseEventSummaryInputFile");
+		return eventInfoList;
 	}
 	
 	private boolean isAssociateExists(List<Associate> existingAssociates,Integer empId){
@@ -332,13 +392,15 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	}
 	
 	public static void main(String[] args){
-		String fp = "C:\\Users\\hp\\Desktop\\Cognizant FSE\\Input Data\\Associate Details.xlsx";
+		//String fp = "C:\\Users\\hp\\Desktop\\Cognizant FSE\\Input Data\\Associate Details.xlsx";
+		String evtInfoFp = "C:\\Users\\hp\\Desktop\\Cognizant FSE\\Input Data\\OutReach Event Information.xlsx";
+		//String evtInfoFp = "/Volumes/DATA/test/fse_input/OutReach Event Information.xlsx";
 		//String fp = "/Volumes/DATA/test/fse_input/AssociateDetails.xlsx";
 		//String evtInfoFp = "/Volumes/DATA/test/fse_input/OutReach Event Information.xlsx";
 		//String entSummFp = "/Volumes/DATA/test/fse_input/Outreach Events Summary.xlsx";
 		
 		ORADataLoadServiceImpl srv = new ORADataLoadServiceImpl();
-		srv.parseAssociateInputFile(fp);
+		srv.parseEventSummaryInputFile(evtInfoFp);
 	}
 
 
