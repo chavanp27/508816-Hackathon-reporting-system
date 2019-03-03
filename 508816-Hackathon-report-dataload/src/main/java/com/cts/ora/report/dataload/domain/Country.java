@@ -22,13 +22,14 @@ import org.springframework.format.annotation.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Entity()
 @Table(name="ORA_REF_GEO_COUNTRY", 
        uniqueConstraints=
             @UniqueConstraint(columnNames={"name"})
     )
-@Data
+@Data @EqualsAndHashCode(of={"name"})
 public class Country {
 	
 	@Id
@@ -38,9 +39,6 @@ public class Country {
 	
 	@Column @NotBlank
 	private String name;
-	
-	@Column
-	private String description;
 	
 	@Column @CreationTimestamp
 	@Temporal(TemporalType.DATE)

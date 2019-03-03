@@ -31,5 +31,5 @@ public class DataLoadLog {
 	
 	@OneToOne
 	@JoinColumn(name="repId",insertable=false,updatable=false)
-	private IncomingFiles iF;
+	private IncomingFile iF;
 }

@@ -52,8 +52,8 @@ public class ORADataLoadController {
 	
 	@PostMapping("/data/load")
 	@ResponseBody
-	public ORAResponse loadAssociateData(@RequestBody ORADataLoadRequest request){
-		logger.info("Into loadAssociateData");
+	public ORAResponse loadIncomingData(@RequestBody ORADataLoadRequest request){
+		logger.info("Into loadIncomingData");
 		ORAResponse resp=null;
 		try {
 			logger.info("Request=="+JSONConverter.toString(request));
@@ -61,7 +61,27 @@ public class ORADataLoadController {
 			watch.start();
 			resp = service.loadIncomingFiles(request);
 			watch.stop();
-			logger.info("out of loadAssociateData");
+			logger.info("out of loadIncomingData");
+			logger.info("Data Load Time taken(seconds)=="+watch.getTotalTimeSeconds());
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			ORAMessageUtil.setFailureMessage(resp);
+		}
+		return resp;
+	}
+	
+	@PostMapping("/masterData/load")
+	@ResponseBody
+	public ORAResponse loadMasterData(@RequestBody ORADataLoadRequest request){
+		logger.info("Into loadMasterData");
+		ORAResponse resp=null;
+		try {
+			logger.info("Request=="+JSONConverter.toString(request));
+			StopWatch watch = new StopWatch();
+			watch.start();
+			resp = service.loadMasterDataFiles(request);
+			watch.stop();
+			logger.info("out of loadMasterData");
 			logger.info("Data Load Time taken(seconds)=="+watch.getTotalTimeSeconds());
 		} catch (Exception e) {
 			logger.error(e.getMessage());

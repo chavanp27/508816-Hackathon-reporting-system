@@ -23,7 +23,7 @@ import lombok.ToString;
 
 @Entity(name="ORA_SYS_INCOMING_FILES")
 @Getter @Setter @ToString @EqualsAndHashCode(of={"inboundId"})
-public class IncomingFiles {
+public class IncomingFile {
 	
 	@Id @GeneratedValue(strategy=GenerationType.AUTO,generator="native")
 	@GenericGenerator(name = "native", strategy = "native")

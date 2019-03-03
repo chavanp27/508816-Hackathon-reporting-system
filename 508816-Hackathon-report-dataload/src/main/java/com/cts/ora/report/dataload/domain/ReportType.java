@@ -11,10 +11,8 @@ import javax.validation.constraints.NotBlank;
 
 import org.hibernate.annotations.GenericGenerator;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 
 @Entity
 @Table(
@@ -22,7 +20,7 @@ import lombok.ToString;
         uniqueConstraints=
             @UniqueConstraint(columnNames={"reportType"})
     )
-@Getter @Setter @ToString @EqualsAndHashCode(of={"reportType"})
+@Data @EqualsAndHashCode(of={"reportType"})
 public class ReportType {
 	
 	@Id

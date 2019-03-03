@@ -14,8 +14,10 @@ import org.springframework.stereotype.Component;
 
 import com.cts.ora.report.dataload.domain.Associate;
 import com.cts.ora.report.dataload.domain.BusinessUnit;
-import com.cts.ora.report.dataload.domain.IncomingFiles;
+import com.cts.ora.report.dataload.domain.EventCategory;
+import com.cts.ora.report.dataload.domain.IncomingFile;
 import com.cts.ora.report.dataload.domain.Location;
+import com.cts.ora.report.dataload.domain.Project;
 import com.cts.ora.report.dataload.domain.ReportType;
 import com.cts.ora.report.dataload.repository.AssociateRepository;
 import com.cts.ora.report.exception.ORAException;
@@ -59,10 +61,6 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 				throw new ORAException("DATA_SAVE_FAILURE", "Associate Data not saved", e);
 			} catch (Exception e1) {
 				logger.error("Error during rollback");
-			}finally {
-				if(em!=null){
-					em.close();
-				}
 			}
 		}
 		logger.info("Out of saveAssociates");
@@ -124,7 +122,7 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 			buList = em.createQuery("SELECT b FROM BusinessUnit b", BusinessUnit.class).getResultList();
 		} catch (Exception e) {
 			logger.error("Error in getAllBusinessUnits:"+e.getMessage());
-			throw new ORAException();
+			throw new ORAException("FETCH_BU_FAILURE", "Fetch BU failure", e);
 		}finally {
 			if(em!=null){
 				em.close();
@@ -158,13 +156,13 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 
 
 	@Override
-	public List<IncomingFiles> createIncomingFiles(List<IncomingFiles> incomingFiles) {
+	public List<IncomingFile> createIncomingFiles(List<IncomingFile> incomingFiles) {
 		logger.info("Into updateIncomingFiles:"+incomingFiles);
 		
 		try {
 			em = emf.createEntityManager();
 			em.getTransaction().begin();
-			for(IncomingFiles file:incomingFiles){
+			for(IncomingFile file:incomingFiles){
 				em.persist(file);
 				em.refresh(file);
 			}
@@ -173,10 +171,6 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		} catch (Exception e) {
 			logger.error("Error in updateIncomingFiles:"+e.getMessage());
 			throw new ORAException("INCOMING_FILE_SAVE_FAILURE", "Incoming Files not saved", e);
-		}finally {
-			if(em!=null){
-				em.close();
-			}
 		}
 		logger.info("Out of updateIncomingFiles");
 		return incomingFiles;
@@ -189,7 +183,7 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		try {
 			em = emf.createEntityManager();
 			em.getTransaction().begin();
-			IncomingFiles file = em.find(IncomingFiles.class, new Long(fileId));
+			IncomingFile file = em.find(IncomingFile.class, new Long(fileId));
 			file.setStatus(status);
 			em.merge(file);
 			em.getTransaction().commit();
@@ -198,10 +192,6 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 			e.printStackTrace();
 			logger.error("Error in updateIncomingFileStatus:"+e);
 			throw new ORAException("INCOMING_FILE_STATUS_FAILURE", "Incoming Files status update failure", e);
-		}finally {
-			if(em!=null){
-				em.close();
-			}
 		}
 		logger.info("Out of updateIncomingFileStatus");
 	}
@@ -209,8 +199,125 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 
 	@Override
 	public void saveLocation(List<Location> locations) {
-		// TODO Auto-generated method stub
+		logger.info("Into saveLocation");
 		
+		logger.info("projLst::"+locations);
+		
+		try {
+			/*em.getTransaction().begin();
+			
+			
+		    em.getTransaction().commit();*/
+		}catch(Exception e) {
+			logger.error("Error during saveLocation:"+e.getMessage());
+			try {
+				em.getTransaction().rollback();
+				throw new ORAException("GEOGRAPHY_DATA_LOAD_FAILURE", "Project/Category not saved", e);
+			} catch (Exception e1) {
+				logger.error("Error during rollback");
+			}
+		}
+		
+		logger.info("Out of saveLocation");
+		
+	}
+
+
+	@Override
+	public List<Project> getAllProjects() {
+		logger.info("Into getAllProjects");
+		List<Project> projectLst=null;
+		try {
+			em = emf.createEntityManager();
+			projectLst = em.createQuery("SELECT p FROM Project p", Project.class).getResultList();
+		} catch (Exception e) {
+			logger.error("Error in getAllProjects:"+e.getMessage());
+			throw new ORAException("FETCH_PROJECT_FAILURE", "Fetch Proj failure", e);
+		}
+		logger.info("Out of getAllProjects");
+		return projectLst;
+	}
+
+
+	@Override
+	public List<EventCategory> getAllEventCategories() {
+		logger.info("Into getAllEventCategories");
+		List<EventCategory> eventCategoryLst=null;
+		try {
+			em = emf.createEntityManager();
+			eventCategoryLst = em.createQuery("SELECT e FROM EventCategory e", EventCategory.class).getResultList();
+		} catch (Exception e) {
+			logger.error("Error in getAllEventCategories:"+e.getMessage());
+			throw new ORAException("FETCH_CATEGORY_FAILURE", "Fetch Category failure", e);
+		}
+		logger.info("Out of getAllEventCategories");
+		return eventCategoryLst;
+	}
+
+
+	@Override
+	public void saveProjectAndCategoryInfo(List<Project> projLst, List<EventCategory> eventCatLst) {
+		logger.info("Into saveProjectAndCategoryInfo");
+		
+		logger.info("projLst::"+projLst);
+		logger.info("eventCatLst::"+eventCatLst);
+		try {
+			em.getTransaction().begin();
+			
+			projLst.stream().forEach(p->{
+				if(p.isPersist()){
+					em.persist(p);
+				}else if(p.isUpdate()){
+					em.merge(p);
+				}
+			});
+			
+			eventCatLst.stream().forEach(e->{
+				if(e.isPersist()){
+					em.persist(e);
+				}else if(e.isUpdate()){
+					em.merge(e);
+				}
+			});
+		    em.getTransaction().commit();
+		}catch(Exception e) {
+			logger.error("Error during saveAssociates:"+e.getMessage());
+			try {
+				em.getTransaction().rollback();
+				throw new ORAException("PROJECT_CATEGORY_LOAD_FAILURE", "Project/Category not saved", e);
+			} catch (Exception e1) {
+				logger.error("Error during rollback");
+			}/*finally {
+				if(em!=null){
+					em.close();
+				}
+			}*/
+		}
+		
+		logger.info("Out of saveProjectAndCategoryInfo");
+	}
+
+	@Override
+	public List<Location> getLocationById(Long locId) {
+		logger.info("Into getLocationById:: "+locId);
+		List<Location> locLst=null;
+		try {
+			em = emf.createEntityManager();
+			if(locId>-1){
+				//Get by Id
+				locLst = em.createQuery("SELECT l FROM Location l WHERE l.locId = :locId", Location.class)
+							.setParameter("locId", locId).getResultList();
+			}else{
+				//Get All
+				locLst = em.createQuery("SELECT l FROM Location l", Location.class).getResultList();
+			}
+			
+		} catch (Exception e) {
+			logger.error("Error in getLocationById:"+e.getMessage());
+			throw new ORAException("FETCH_PROJECT_FAILURE", "Save geogrpahy data failure", e);
+		}
+		logger.info("Out of getLocationById");
+		return locLst;
 	}
 
 }

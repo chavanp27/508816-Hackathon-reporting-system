@@ -13,5 +13,6 @@ public class ORADataLoadRequest extends ORARequest {
 	private ORAFile ascFile;
 	private ORAFile eventSummaryFile;
 	private ORAFile eventDetailFile;
+	private ORAFile masterDataFile;
 
 }

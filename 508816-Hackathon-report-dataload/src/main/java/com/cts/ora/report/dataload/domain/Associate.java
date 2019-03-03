@@ -1,6 +1,7 @@
 package com.cts.ora.report.dataload.domain;
 
 import java.util.Date;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -8,6 +9,7 @@ import javax.persistence.EntityResult;
 import javax.persistence.FieldResult;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SqlResultSetMapping;
 import javax.persistence.Temporal;
@@ -70,7 +72,8 @@ public class Associate {
 	@Transient @JsonIgnore
 	private boolean isBuExists;
 	
-	//@OneToMany
-	//private Set<EventInfo> events;
+	@OneToMany
+	@JoinColumn(name="eventId")
+	private Set<EventInfo> events;
 
 }

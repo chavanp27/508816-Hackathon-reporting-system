@@ -24,25 +24,23 @@ import org.springframework.format.annotation.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Entity()
 @Table(name="ORA_REF_GEO_RES_AREA", 
 uniqueConstraints=
      @UniqueConstraint(columnNames={"name"})
 )
-@Data
+@Data @EqualsAndHashCode(of={"name"})
 public class ResidenceArea {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO,generator="native")
 	@GenericGenerator(name = "native", strategy = "native")
-	private Integer resAreaId;
+	private Integer areaId;
 	
 	@Column @NotBlank
 	private String name;
-	
-	@Column
-	private String description;
 	
 	@Column @CreationTimestamp
 	@Temporal(TemporalType.DATE)
@@ -57,5 +55,8 @@ public class ResidenceArea {
 	@OneToOne @JsonIgnore 
 	@JoinColumn(name="cityId",insertable=true,updatable=true)
 	private City city;
+	
+	@OneToOne(mappedBy="area") @JsonIgnore
+	private PinCode pinCode;
 
 }

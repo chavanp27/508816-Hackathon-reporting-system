@@ -10,5 +10,6 @@ public class ORAFile {
 	private Long fileId;
 	private String fileName;
 	private String fileLoc;
+	private String fileType;
 
 }

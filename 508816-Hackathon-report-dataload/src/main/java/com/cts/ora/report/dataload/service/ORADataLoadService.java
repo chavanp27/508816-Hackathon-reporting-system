@@ -18,6 +18,8 @@ public interface ORADataLoadService {
 	
 	ORAResponse loadIncomingFiles(ORADataLoadRequest request);
 	
+	ORAResponse loadMasterDataFiles(ORADataLoadRequest request);
+	
 	ORAResponse fetchDataLoadLog(ORADataLoadRequest request);
 	
 	FileUploadResponse uploadFile(MultipartFile file);

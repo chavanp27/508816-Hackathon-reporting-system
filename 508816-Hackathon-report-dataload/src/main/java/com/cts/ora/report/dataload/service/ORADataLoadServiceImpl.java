@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,12 +32,20 @@ import com.cts.ora.report.constants.ORADataLoadConstants;
 import com.cts.ora.report.dataload.dao.ORADataLoadDao;
 import com.cts.ora.report.dataload.domain.Associate;
 import com.cts.ora.report.dataload.domain.BusinessUnit;
+import com.cts.ora.report.dataload.domain.City;
+import com.cts.ora.report.dataload.domain.Country;
+import com.cts.ora.report.dataload.domain.EventCategory;
 import com.cts.ora.report.dataload.domain.EventInfo;
-import com.cts.ora.report.dataload.domain.IncomingFiles;
+import com.cts.ora.report.dataload.domain.IncomingFile;
+import com.cts.ora.report.dataload.domain.Location;
+import com.cts.ora.report.dataload.domain.Project;
+import com.cts.ora.report.dataload.domain.ResidenceArea;
+import com.cts.ora.report.dataload.domain.State;
 import com.cts.ora.report.dataload.vo.ORADataLoadRequest;
 import com.cts.ora.report.exception.ORAException;
 import com.cts.ora.report.file.vo.FileUploadResponse;
 import com.cts.ora.report.file.vo.ORAFile;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 @Component
 public class ORADataLoadServiceImpl implements ORADataLoadService {
@@ -79,16 +90,16 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	
 	private void createIncomingFileEntry(List<ORAFile> uploadFiles){
 		logger.info("Into updateIncomingTable"+uploadFiles);
-		List<IncomingFiles> incomingFiles=new ArrayList<>();
-		IncomingFiles incFile = null;
+		List<IncomingFile> incomingFiles=new ArrayList<>();
+		IncomingFile incFile = null;
 		for(ORAFile file:uploadFiles){
 			if(isUploadFileValid(file)){
-				incFile = new IncomingFiles();
+				incFile = new IncomingFile();
 				incFile.setFileLoc(file.getFileLoc());
 				incFile.setFileName(file.getFileLoc().substring(file.getFileLoc().lastIndexOf("\\")+1));
 				file.setFileName(file.getFileLoc().substring(file.getFileLoc().lastIndexOf("\\")+1));
 				incFile.setStatus(ORADataLoadConstants.NEW);
-				incFile.setRepType(oraDataLoadDao.getReportTypeByName("ASSOCIATE_INFO"));
+				incFile.setRepType(oraDataLoadDao.getReportTypeByName(file.getFileType()));
 				incomingFiles.add(incFile);
 			}
 		}
@@ -129,6 +140,24 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		
 		logger.info("out of updateDataLoadStatus");
 		
+	}
+	
+	private Integer loadMasterData(ORAFile masterFile,Long ascId) {
+		logger.info("Into loadMasterData");
+		Integer statusCode = -1;
+		try{
+			if(masterFile!=null && masterFile.getFileLoc()!=null && !"".equals(masterFile.getFileLoc())){
+				statusCode = populateMasterData(masterFile.getFileLoc(), ascId);
+			}
+		}catch(ORAException e){
+			logger.error("Exception in loadMasterData->"+e);
+			
+		}catch (Exception e) {
+			logger.error("Exception in loadMasterData->"+e);
+		}
+				
+		logger.info("Out of loadMasterData");
+		return statusCode;
 	}
 
 	
@@ -198,6 +227,223 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		return statusCode;
 	}
 	
+	@Override
+	public ORAResponse loadMasterDataFiles(ORADataLoadRequest request) {
+		logger.info("Into loadMasterDataFiles");
+		ORAResponse response = new ORAResponse();
+		
+		try {
+			//Populate ora_sys_incoming_files table - ASync call
+			List<ORAFile> uploadFiles = Stream.of(request.getMasterDataFile()).collect(Collectors.toList());
+			createIncomingFileEntry(uploadFiles);
+			
+			//Load Master Data
+			updateIncomingFileStatus(request.getMasterDataFile().getFileId(), 
+										loadMasterData(request.getMasterDataFile(),request.getAscId()));
+			ORAMessageUtil.setSuccessMessage(response);
+		}catch(ORAException e){
+			logger.error("Exception in loadMasterDataFiles->"+e);
+			ORAMessageUtil.setFailureMessage(response);
+		} 
+		catch (Exception e) {
+			ORAMessageUtil.setFailureMessage(response);
+		}
+		logger.info("out of loadMasterDataFiles");
+		return response;
+	}
+	
+	private Integer populateMasterData(String filePath, Long ascId){
+		logger.info("Into populateMasterData");
+		Integer status = -1;
+		XSSFWorkbook  wb=null;
+		
+		try {
+			wb = new XSSFWorkbook(filePath);
+			populateProjectCategoryData(wb.getSheetAt(0),ascId);
+			populateGeographyData(wb.getSheetAt(1),ascId);
+			
+			status =1;
+			}catch(Exception e){
+				logger.error("Error during populateMasterData:"+e.getMessage());
+				throw new ORAException();
+			}finally {
+				if(wb!=null){
+					try {
+						wb.close();
+					} catch (IOException e) {
+						logger.error("Error during closing Excel WB:"+e.getMessage());
+					}
+				}
+			}
+		logger.info("Out of populateMasterData");
+		return status;
+	}
+	
+	private void populateGeographyData(XSSFSheet sheet,Long ascId)
+					throws JsonProcessingException{
+		logger.info("In populateGeographyData");
+		
+		List<Location> locationLst = null;
+		List<Country> countryLst = null;
+		List<State> stateLst = null;
+		List<City> cityLst = null;
+		List<ResidenceArea> areaLst = null;
+		
+		Project p= null;
+		EventCategory c= null;
+		
+		int rows = sheet.getPhysicalNumberOfRows();
+		logger.info("Geography Sheet has " + rows+ " row(s).");
+		
+		locationLst = oraDataLoadDao.getLocationById(-1L);
+		logger.info("countryLst:"+JSONConverter.toString(locationLst));
+		countryLst = locationLst.stream().map(l->l.getCountryId()).collect(Collectors.toList());
+		logger.info("countryLst:"+JSONConverter.toString(countryLst));
+		
+		/*countryLst = oraDataLoadDao.getAllProjects();
+		logger.info("countryLst:"+JSONConverter.toString(countryLst));
+		stateLst = oraDataLoadDao.getAllEventCategories();
+		logger.info("stateLst:"+JSONConverter.toString(stateLst));
+		cityLst = oraDataLoadDao.getAllProjects();
+		logger.info("cityLst:"+JSONConverter.toString(cityLst));
+		areaLst = oraDataLoadDao.getAllEventCategories();
+		logger.info("areaLst:"+JSONConverter.toString(areaLst));*/
+		
+		for (int r = 1; r < rows; r++) {
+			XSSFRow row = sheet.getRow(r);
+			if (row != null) {
+				String countryName = isValidCell(row.getCell(0))?row.getCell(0).getRichStringCellValue().getString():null;
+				String stateName = isValidCell(row.getCell(1))?row.getCell(1).getRichStringCellValue().getString():null;
+				String cityName = isValidCell(row.getCell(2))?row.getCell(2).getRichStringCellValue().getString():null;
+				String areaName = isValidCell(row.getCell(3))?row.getCell(3).getRichStringCellValue().getString():null;
+				String pinName = isValidCell(row.getCell(4))?row.getCell(4).getRichStringCellValue().getString():null;
+				
+				/*
+				if(p==null) {
+					p = new Project();
+					p.setTitle(projectName);
+					p.setDescription(projectName);
+					p.setCreatedBy(ascId);
+					p.setStatus("A");
+					p.setPersist(Boolean.TRUE);
+					if(c==null){
+						c = new EventCategory();
+						c.setTitle(categoryName);
+						c.setDescription(projectName+" - "+categoryName);
+						c.setCreatedBy(ascId);
+						c.setStatus("A");
+						c.setPersist(Boolean.TRUE);
+						eventCatLst.add(c);
+					}else{
+						c.setUpdate(Boolean.TRUE);
+					}
+					projLst.add(p);
+				}else{
+					if(c==null){
+						c = new EventCategory();
+						c.setTitle(categoryName);
+						c.setDescription(projectName+" - "+categoryName);
+						c.setCreatedBy(ascId);
+						c.setPersist(Boolean.TRUE);
+						c.setStatus("A");
+						eventCatLst.add(c);
+					}
+				}
+				c.setProject(p);*/
+			}
+			logger.info("Out of populateGeographyData");
+		}
+		
+		//Save Project & Category data
+		oraDataLoadDao.saveLocation(locationLst);
+	
+		
+	}
+	
+	private void populateProjectCategoryData(XSSFSheet sheet, Long ascId) 
+						throws JsonProcessingException{
+		logger.info("In populateProjectCategoryData");
+		List<Project> projLst = null;
+		List<EventCategory> eventCatLst = null;
+		
+		Project p= null;
+		EventCategory c= null;
+		
+		int rows = sheet.getPhysicalNumberOfRows();
+		logger.info("ProjectCategory Sheet has " + rows+ " row(s).");
+		
+		projLst = oraDataLoadDao.getAllProjects();
+		logger.info("projLst:"+JSONConverter.toString(projLst));
+		eventCatLst = oraDataLoadDao.getAllEventCategories();
+		logger.info("eventCatLst:"+JSONConverter.toString(eventCatLst));
+		
+		for (int r = 1; r < rows; r++) {
+			XSSFRow row = sheet.getRow(r);
+			if (row != null) {
+				String projectName = isValidCell(row.getCell(0))?row.getCell(0).getRichStringCellValue().getString():null;
+				String categoryName = isValidCell(row.getCell(1))?row.getCell(1).getRichStringCellValue().getString():null;
+				p = isProjExists(projLst,projectName);
+				c = isCategoryExists(eventCatLst,categoryName);
+				
+				if(p==null) {
+					p = new Project();
+					p.setTitle(projectName);
+					p.setDescription(projectName);
+					p.setCreatedBy(ascId);
+					p.setStatus("A");
+					p.setPersist(Boolean.TRUE);
+					if(c==null){
+						c = new EventCategory();
+						c.setTitle(categoryName);
+						c.setDescription(projectName+" - "+categoryName);
+						c.setCreatedBy(ascId);
+						c.setStatus("A");
+						c.setPersist(Boolean.TRUE);
+						eventCatLst.add(c);
+					}else{
+						c.setUpdate(Boolean.TRUE);
+					}
+					projLst.add(p);
+				}else{
+					if(c==null){
+						c = new EventCategory();
+						c.setTitle(categoryName);
+						c.setDescription(projectName+" - "+categoryName);
+						c.setCreatedBy(ascId);
+						c.setPersist(Boolean.TRUE);
+						c.setStatus("A");
+						eventCatLst.add(c);
+					}
+				}
+				c.setProject(p);
+			}
+		}
+		//Save Project & Category data
+		oraDataLoadDao.saveProjectAndCategoryInfo(projLst,eventCatLst);
+		logger.info("Out of populateProjectCategoryData");
+	}
+	
+	
+	private Project isProjExists(List<Project> projLst, String projectName){
+		Project p =new Project();
+		p.setTitle(projectName);
+		if(projLst!=null && projLst.contains(p)){
+			return projLst.get(projLst.indexOf(p));
+		}else{
+			return null;
+		}
+	}
+	
+	private EventCategory isCategoryExists(List<EventCategory> eventCatLst,String categoryName){
+		EventCategory p =new EventCategory();
+		p.setTitle(categoryName);
+		if(eventCatLst!=null && eventCatLst.contains(p)){
+			return eventCatLst.get(eventCatLst.indexOf(p));
+		}else{
+			return null;
+		}
+	}
+	
 	private List<Associate> parseAssociateInputFile(String filePath){
 		logger.info("Loading Associate Data");
 		List<Associate> ascLst=new ArrayList<>();
@@ -218,7 +464,6 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			}
 			if(existingAssociates!=null ){
 				buList = oraDataLoadDao.getAllBusinessUnits();
-				//logger.info("buList:"+JSONConverter.toString(buList));
 			}
 			
 			for (int r = 1; r < rows; r++) {
@@ -242,7 +487,6 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					BusinessUnit bu = new BusinessUnit();
 					bu.setName(buName);
 					bu.setDescription(buName);
-					//logger.info("BULst:"+JSONConverter.toString(buList));
 					if (buList != null) {
 						if (buList.indexOf(bu)> -1) {
 							a.setBuExists(Boolean.TRUE);
@@ -281,49 +525,66 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	private List<EventInfo> parseEventSummaryInputFile(String filePath){
 		logger.info("Into parseEventSummaryInputFile");
 		List<EventInfo> eventInfoList=new ArrayList<>();
-		EventInfo a=null;
+		EventInfo evntInfo=null;
 		List<Associate> existingAssociates=null;
-		List<BusinessUnit> buList = null;
+		List<Project> projLst = null;
+		List<EventCategory> eventCatLst = null;
+		
 		XSSFWorkbook  wb=null;
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("dd-mm-yyyy");
 		
 		try {
 			wb = new XSSFWorkbook(filePath);
 			XSSFSheet sheet = wb.getSheetAt(0);
 			int rows = sheet.getPhysicalNumberOfRows();
 			logger.info("Event Summary Sheet has " + rows+ " row(s).");
-			if(rows>0){
+			/*if(rows>0){
 				//Fetch existing employees
 				existingAssociates = oraDataLoadDao.getAllAssociates();
 				logger.info("existingAssociates:"+JSONConverter.toString(existingAssociates));
 			}
-			if(existingAssociates!=null ){
-				buList = oraDataLoadDao.getAllBusinessUnits();
-				//logger.info("buList:"+JSONConverter.toString(buList));
-			}
+			projLst = oraDataLoadDao.getAllProjects();
+			logger.info("projLst:"+JSONConverter.toString(projLst));
+			eventCatLst = oraDataLoadDao.getAllEventCategories();
+			logger.info("eventCatLst:"+JSONConverter.toString(eventCatLst));*/
 			
 			for (int r = 1; r < rows; r++) {
 				XSSFRow row = sheet.getRow(r);
 				if (row != null) {
-					String empId = isValidCell(row.getCell(0))?row.getCell(0).getRawValue():"-1";
-					String buName = isValidCell(row.getCell(4))?row.getCell(4).getRichStringCellValue().getString():null;
-					if(isAssociateExists(existingAssociates,Integer.parseInt(empId))) {
-								//&& noChangeInDept(existingAssociates,Long.parseLong(empId),buName)){
-						continue;
-					}
-					String name = isValidCell(row.getCell(1))?row.getCell(1).getRichStringCellValue().getString():null;
-					String designation = isValidCell(row.getCell(2))?row.getCell(2).getRichStringCellValue().getString():null;
-					//String loc = isValidCell(row.getCell(3))?row.getCell(3).getRichStringCellValue().getString():null;
+					String eventId = isValidCell(row.getCell(0))?row.getCell(0).getRawValue():"-1";
+					String baseLoc = isValidCell(row.getCell(2))?row.getCell(2).getRichStringCellValue().getString():null;
+					String beneficiaryName = isValidCell(row.getCell(3))?row.getCell(3).getRichStringCellValue().getString():null;
+					String eventAddr = isValidCell(row.getCell(4))?row.getCell(4).getRichStringCellValue().getString():null;
+					String projectName = isValidCell(row.getCell(6))?row.getCell(6).getRichStringCellValue().getString():null;
+					String catName = isValidCell(row.getCell(7))?row.getCell(7).getRichStringCellValue().getString():null;
+					
+					String eventName = isValidCell(row.getCell(8))?row.getCell(8).getRichStringCellValue().getString():null;
+					//String desc = isValidCell(row.getCell(9))?row.getCell(9).getRichStringCellValue().getString():null;
+					String eventDate = isValidCell(row.getCell(10))?row.getCell(10).getRichStringCellValue().getString():null;
+					boolean isWeekend = isWeekend(sdf.parse(eventDate));
+					
+					
+					
+					evntInfo = new EventInfo();
+					
+					
+					Project p = new Project();
+					if (projLst != null) {
+						if (projLst.indexOf(p)> -1) {
+						
+						} else {
+							
+						}
 
-					a = new EventInfo();
+					}else {
+						
+					}
 					
-					
-					BusinessUnit bu = new BusinessUnit();
-					
-					
-					eventInfoList.add(a);
+					eventInfoList.add(evntInfo);
 				}
 			}
-			//logger.info("Out of parseAssociateInputFile"+JSONConverter.toString(ascLst));
+			logger.info("eventInfoList::"+JSONConverter.toString(eventInfoList));
 			
 			}catch(Exception e){
 				logger.error("Error in parseEventSummaryInputFile:"+e);
@@ -339,6 +600,18 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			}
 		logger.info("Out of parseEventSummaryInputFile");
 		return eventInfoList;
+	}
+	
+	private boolean isWeekend(Date date) {
+		logger.info("Input Date: " + date);
+		Calendar c1 = Calendar.getInstance();
+		c1.setTime(date);
+		if ((c1.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) 
+				|| (Calendar.DAY_OF_WEEK == Calendar.SUNDAY)) {
+			return Boolean.TRUE;
+		} else {
+			return Boolean.FALSE;
+		}
 	}
 	
 	private boolean isAssociateExists(List<Associate> existingAssociates,Integer empId){
@@ -394,13 +667,14 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	public static void main(String[] args){
 		//String fp = "C:\\Users\\hp\\Desktop\\Cognizant FSE\\Input Data\\Associate Details.xlsx";
 		String evtInfoFp = "C:\\Users\\hp\\Desktop\\Cognizant FSE\\Input Data\\OutReach Event Information.xlsx";
+		String masterDataFp = "C:\\Users\\hp\\Desktop\\Cognizant FSE\\Input Data\\ProjectCategory_Master.xlsx";
 		//String evtInfoFp = "/Volumes/DATA/test/fse_input/OutReach Event Information.xlsx";
 		//String fp = "/Volumes/DATA/test/fse_input/AssociateDetails.xlsx";
 		//String evtInfoFp = "/Volumes/DATA/test/fse_input/OutReach Event Information.xlsx";
 		//String entSummFp = "/Volumes/DATA/test/fse_input/Outreach Events Summary.xlsx";
 		
 		ORADataLoadServiceImpl srv = new ORADataLoadServiceImpl();
-		srv.parseEventSummaryInputFile(evtInfoFp);
+		srv.parseEventSummaryInputFile(masterDataFp);
 	}
 
 
@@ -450,4 +724,5 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
         return resp;
         
 	}
+
 }

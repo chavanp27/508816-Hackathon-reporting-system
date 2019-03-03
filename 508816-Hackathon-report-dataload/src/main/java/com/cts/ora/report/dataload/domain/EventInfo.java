@@ -31,8 +31,12 @@ public class EventInfo {
 	private String eventId;
 	
 	@OneToOne
-	@JoinColumn(name="id",insertable=true,updatable=true)
+	@JoinColumn(name="proj_id",insertable=true,updatable=true)
 	private Project project;
+	
+	@OneToOne
+	@JoinColumn(name="cat_id",insertable=true,updatable=true)
+	private EventCategory category;
 	
 	@NotBlank
 	private String title;
@@ -42,7 +46,7 @@ public class EventInfo {
 	private Integer period;
 	
 	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@DateTimeFormat(pattern = "dd-MM-yyyy")
 	private Date eventDate;
 	
 	private String beneficiaryName;
