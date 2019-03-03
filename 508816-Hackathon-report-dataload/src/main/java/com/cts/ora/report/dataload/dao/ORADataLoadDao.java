@@ -9,6 +9,7 @@ import com.cts.ora.report.dataload.domain.Country;
 import com.cts.ora.report.dataload.domain.EventCategory;
 import com.cts.ora.report.dataload.domain.IncomingFile;
 import com.cts.ora.report.dataload.domain.Location;
+import com.cts.ora.report.dataload.domain.PinCode;
 import com.cts.ora.report.dataload.domain.Project;
 import com.cts.ora.report.dataload.domain.ReportType;
 
@@ -36,6 +37,7 @@ public interface ORADataLoadDao {
 	
 	List<Location> getLocationById(Long locId);
 	List<Country> getCountryById(Long cntryId);
+	Location getLocationBasedOnPinCode(String pinNum);
 	
 	/*List<Country> getCountryById(Long cntryId);
 	List<State> getStateById(Long stateId);

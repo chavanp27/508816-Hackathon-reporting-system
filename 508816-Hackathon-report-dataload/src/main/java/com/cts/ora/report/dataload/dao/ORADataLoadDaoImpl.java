@@ -323,6 +323,25 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 	}
 	
 	@Override
+	public Location getLocationBasedOnPinCode(String pinNum) {
+		logger.info("Into getLocationBasedOnPinCode:: "+pinNum);
+		Location location=null;
+		try {
+			em = emf.createEntityManager();
+			if(pinNum!=null){
+				location = em.createQuery("SELECT l FROM Location l, PinCode p ON l.codeId=p.codeId WHERE p.name = :pinNum", Location.class)
+							.setParameter("pinNum", pinNum).getSingleResult();
+			}
+			
+		} catch (Exception e) {
+			logger.error("Error in getLocationBasedOnPinCode:"+e.getMessage());
+			throw new ORAException("FETCH_PROJECT_FAILURE", "Save geogrpahy data failure", e);
+		}
+		logger.info("Out of getLocationBasedOnPinCode");
+		return location;
+	}
+	
+	@Override
 	public void saveLocation(Map<String,List> geoMap) {
 		logger.info("Into saveLocation:"+geoMap);
 		
@@ -393,7 +412,6 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 					em.persist(loc);
 				}
 			});
-			
 		    em.getTransaction().commit();		
 		}catch(Exception e) {
 			e.printStackTrace();

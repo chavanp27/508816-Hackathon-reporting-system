@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -585,19 +586,16 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			XSSFSheet sheet = wb.getSheetAt(0);
 			int rows = sheet.getPhysicalNumberOfRows();
 			logger.info("Event Summary Sheet has " + rows+ " row(s).");
-			/*if(rows>0){
-				//Fetch existing employees
-				existingAssociates = oraDataLoadDao.getAllAssociates();
-				logger.info("existingAssociates:"+JSONConverter.toString(existingAssociates));
-			}
-			projLst = oraDataLoadDao.getAllProjects();
-			logger.info("projLst:"+JSONConverter.toString(projLst));
-			eventCatLst = oraDataLoadDao.getAllEventCategories();
-			logger.info("eventCatLst:"+JSONConverter.toString(eventCatLst));*/
+			logger.info("filePath::"+filePath);
 			
 			for (int r = 1; r < rows; r++) {
 				XSSFRow row = sheet.getRow(r);
 				if (row != null) {
+					
+					String isApproved = isValidCell(row.getCell(17))?row.getCell(17).getRichStringCellValue().getString():null;
+					if(!isApproved.equalsIgnoreCase("Approved")){
+						continue;
+					}
 					String eventId = isValidCell(row.getCell(0))?row.getCell(0).getRawValue():"-1";
 					String baseLoc = isValidCell(row.getCell(2))?row.getCell(2).getRichStringCellValue().getString():null;
 					String beneficiaryName = isValidCell(row.getCell(3))?row.getCell(3).getRichStringCellValue().getString():null;
@@ -610,22 +608,26 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					String eventDate = isValidCell(row.getCell(10))?row.getCell(10).getRichStringCellValue().getString():null;
 					boolean isWeekend = isWeekend(sdf.parse(eventDate));
 					
+					String totVolCount = isValidCell(row.getCell(11))?row.getCell(11).getRawValue():"-1";
+					String totVolHours = isValidCell(row.getCell(12))?row.getCell(12).getRawValue():"-1";
+					String totTravelHours = isValidCell(row.getCell(13))?row.getCell(13).getRawValue():"-1";
+					String totEventHours = isValidCell(row.getCell(14))?row.getCell(14).getRawValue():"-1";
+					String totLivesImpact = isValidCell(row.getCell(15))?row.getCell(15).getRawValue():"-1";
 					
+					String pocs = isValidCell(row.getCell(18))?row.getCell(18).getRichStringCellValue().getString():null;
+					List<String> empIdLst = Arrays.asList(pocs.split(";"));
+					
+					
+					logger.info("eventId:"+eventId);
+					logger.info("isWeekend:"+isWeekend);
+					logger.info("empIdLst:"+empIdLst);
+					
+					Location loc = oraDataLoadDao.getLocationBasedOnPinCode(eventAddr.substring(eventAddr.lastIndexOf("-")+1));
+					logger.info("loc:"+loc);
 					
 					evntInfo = new EventInfo();
 					
 					
-					Project p = new Project();
-					if (projLst != null) {
-						if (projLst.indexOf(p)> -1) {
-						
-						} else {
-							
-						}
-
-					}else {
-						
-					}
 					
 					eventInfoList.add(evntInfo);
 				}
@@ -633,6 +635,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			logger.info("eventInfoList::"+JSONConverter.toString(eventInfoList));
 			
 			}catch(Exception e){
+				e.printStackTrace();
 				logger.error("Error in parseEventSummaryInputFile:"+e);
 				throw new ORAException();
 			}finally {
