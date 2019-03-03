@@ -1,9 +1,11 @@
 package com.cts.ora.report.dataload.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import com.cts.ora.report.dataload.domain.Associate;
 import com.cts.ora.report.dataload.domain.BusinessUnit;
+import com.cts.ora.report.dataload.domain.Country;
 import com.cts.ora.report.dataload.domain.EventCategory;
 import com.cts.ora.report.dataload.domain.IncomingFile;
 import com.cts.ora.report.dataload.domain.Location;
@@ -30,9 +32,11 @@ public interface ORADataLoadDao {
 	
 	void saveProjectAndCategoryInfo(List<Project> projLst,List<EventCategory> eventCatLst);
 	
-	void saveLocation(List<Location> locations);
+	void saveLocation(Map<String,List> geoMap);
 	
 	List<Location> getLocationById(Long locId);
+	List<Country> getCountryById(Long cntryId);
+	
 	/*List<Country> getCountryById(Long cntryId);
 	List<State> getStateById(Long stateId);
 	List<City> getCityById(Long cityId);

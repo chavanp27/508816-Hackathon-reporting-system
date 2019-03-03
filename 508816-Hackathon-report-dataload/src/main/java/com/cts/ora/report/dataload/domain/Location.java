@@ -30,7 +30,7 @@ uniqueConstraints=
 public class Location {
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO,generator="native")
+	@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="native")
 	@GenericGenerator(name = "native", strategy = "native")
 	private Integer locId;
 	

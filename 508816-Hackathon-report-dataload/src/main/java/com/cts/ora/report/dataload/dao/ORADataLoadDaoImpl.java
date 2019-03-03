@@ -1,6 +1,8 @@
 package com.cts.ora.report.dataload.dao;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
@@ -14,11 +16,16 @@ import org.springframework.stereotype.Component;
 
 import com.cts.ora.report.dataload.domain.Associate;
 import com.cts.ora.report.dataload.domain.BusinessUnit;
+import com.cts.ora.report.dataload.domain.City;
+import com.cts.ora.report.dataload.domain.Country;
 import com.cts.ora.report.dataload.domain.EventCategory;
 import com.cts.ora.report.dataload.domain.IncomingFile;
 import com.cts.ora.report.dataload.domain.Location;
+import com.cts.ora.report.dataload.domain.PinCode;
 import com.cts.ora.report.dataload.domain.Project;
 import com.cts.ora.report.dataload.domain.ReportType;
+import com.cts.ora.report.dataload.domain.ResidenceArea;
+import com.cts.ora.report.dataload.domain.State;
 import com.cts.ora.report.dataload.repository.AssociateRepository;
 import com.cts.ora.report.exception.ORAException;
 
@@ -196,33 +203,6 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		logger.info("Out of updateIncomingFileStatus");
 	}
 
-
-	@Override
-	public void saveLocation(List<Location> locations) {
-		logger.info("Into saveLocation");
-		
-		logger.info("projLst::"+locations);
-		
-		try {
-			/*em.getTransaction().begin();
-			
-			
-		    em.getTransaction().commit();*/
-		}catch(Exception e) {
-			logger.error("Error during saveLocation:"+e.getMessage());
-			try {
-				em.getTransaction().rollback();
-				throw new ORAException("GEOGRAPHY_DATA_LOAD_FAILURE", "Project/Category not saved", e);
-			} catch (Exception e1) {
-				logger.error("Error during rollback");
-			}
-		}
-		
-		logger.info("Out of saveLocation");
-		
-	}
-
-
 	@Override
 	public List<Project> getAllProjects() {
 		logger.info("Into getAllProjects");
@@ -263,7 +243,6 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		logger.info("eventCatLst::"+eventCatLst);
 		try {
 			em.getTransaction().begin();
-			
 			projLst.stream().forEach(p->{
 				if(p.isPersist()){
 					em.persist(p);
@@ -319,5 +298,118 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		logger.info("Out of getLocationById");
 		return locLst;
 	}
+	
+	@Override
+	public List<Country> getCountryById(Long cntryId) {
+		logger.info("Into getCountryById:: "+cntryId);
+		List<Country> countryLst=null;
+		try {
+			em = emf.createEntityManager();
+			if(cntryId>-1){
+				//Get by Id
+				countryLst = em.createQuery("SELECT c FROM Country c WHERE c.locId = :cntryId", Country.class)
+							.setParameter("cntryId", cntryId).getResultList();
+			}else{
+				//Get All
+				countryLst = em.createQuery("SELECT c FROM Country c", Country.class).getResultList();
+			}
+			
+		} catch (Exception e) {
+			logger.error("Error in getCountryById:"+e.getMessage());
+			throw new ORAException("FETCH_PROJECT_FAILURE", "Save geogrpahy data failure", e);
+		}
+		logger.info("Out of getCountryById");
+		return countryLst;
+	}
+	
+	@Override
+	public void saveLocation(Map<String,List> geoMap) {
+		logger.info("Into saveLocation:"+geoMap);
+		
+		List<Location> locLst = new ArrayList<>();
+		
+		List<Country> countryLst = geoMap.get("COUNTRY");
+		List<State> stateLst = geoMap.get("STATE");
+		List<City> cityLst = geoMap.get("CITY");
+		List<ResidenceArea> areaLst = geoMap.get("AREA");
+		List<PinCode> pinCodeLst = geoMap.get("CODE");
+		
+		try {
+			em.getTransaction().begin();
+			
+			countryLst.stream().forEach(c->{
+				if(c.isPersist()){
+					em.persist(c);
+					em.refresh(c);
+				}else if(c.isUpdate()){
+					em.merge(c);
+				}
+			});
+			
+			stateLst.stream().forEach(c->{
+				if(c.isPersist()){
+					em.persist(c);
+					em.refresh(c);
+				}else if(c.isUpdate()){
+					em.merge(c);
+				}
+			});
+			
+			cityLst.stream().forEach(c->{
+				if(c.isPersist()){
+					em.persist(c);
+					em.refresh(c);
+				}else if(c.isUpdate()){
+					em.merge(c);
+				}
+			});
+			
+			areaLst.stream().forEach(a->{
+				if(a.isPersist()){
+					em.persist(a);
+					em.refresh(a);
+				}else if(a.isUpdate()){
+					em.merge(a);
+				}
+			});
+			
+			pinCodeLst.stream().forEach(c->{
+				if(c.isPersist()){
+					em.persist(c);
+					em.refresh(c);
+				}else if(c.isUpdate()){
+					em.merge(c);
+				}
+			});
+			
+			pinCodeLst.stream().forEach(p->{
+				if(p.isPersist()){
+					Location loc = new Location();
+					loc.setCodeId(p);
+					loc.setResAreaId(p.getArea());
+					loc.setCId(p.getArea().getCity());
+					loc.setSId(p.getArea().getCity().getState());
+					loc.setCountryId(p.getArea().getCity().getState().getCountry());
+					em.persist(loc);
+				}
+			});
+			
+		    em.getTransaction().commit();		
+		}catch(Exception e) {
+			e.printStackTrace();
+			logger.error("Error during saveLocation:"+e);
+			try {
+				em.getTransaction().rollback();
+				throw new ORAException("GEOGRAPHY_DATA_LOAD_FAILURE", "Project/Category not saved", e);
+			} catch (Exception e1) {
+				logger.error("Error during rollback");
+			}
+		}
+		
+		logger.info("Out of saveLocation");
+	}
+	
+	
+
 
 }

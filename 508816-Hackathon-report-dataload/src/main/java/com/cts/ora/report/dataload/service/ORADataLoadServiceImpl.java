@@ -8,7 +8,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,6 +40,7 @@ import com.cts.ora.report.dataload.domain.EventCategory;
 import com.cts.ora.report.dataload.domain.EventInfo;
 import com.cts.ora.report.dataload.domain.IncomingFile;
 import com.cts.ora.report.dataload.domain.Location;
+import com.cts.ora.report.dataload.domain.PinCode;
 import com.cts.ora.report.dataload.domain.Project;
 import com.cts.ora.report.dataload.domain.ResidenceArea;
 import com.cts.ora.report.dataload.domain.State;
@@ -264,6 +267,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			
 			status =1;
 			}catch(Exception e){
+				e.printStackTrace();
 				logger.error("Error during populateMasterData:"+e.getMessage());
 				throw new ORAException();
 			}finally {
@@ -288,26 +292,30 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		List<State> stateLst = null;
 		List<City> cityLst = null;
 		List<ResidenceArea> areaLst = null;
+		List<PinCode> pinCodeLst = null;
+		Map<String,List> geoMap = new HashMap<>();
 		
-		Project p= null;
-		EventCategory c= null;
+		Country cntry = null;
+		State state = null;
+		City city = null;
+		ResidenceArea area = null;
+		PinCode code = null;
 		
 		int rows = sheet.getPhysicalNumberOfRows();
 		logger.info("Geography Sheet has " + rows+ " row(s).");
 		
 		locationLst = oraDataLoadDao.getLocationById(-1L);
-		logger.info("countryLst:"+JSONConverter.toString(locationLst));
-		countryLst = locationLst.stream().map(l->l.getCountryId()).collect(Collectors.toList());
+		logger.info("locationLst:"+JSONConverter.toString(locationLst));
+		countryLst = locationLst.stream().map(l->l.getCountryId()).distinct().collect(Collectors.toList());
 		logger.info("countryLst:"+JSONConverter.toString(countryLst));
-		
-		/*countryLst = oraDataLoadDao.getAllProjects();
-		logger.info("countryLst:"+JSONConverter.toString(countryLst));
-		stateLst = oraDataLoadDao.getAllEventCategories();
+		stateLst = locationLst.stream().map(l->l.getSId()).distinct().collect(Collectors.toList());
 		logger.info("stateLst:"+JSONConverter.toString(stateLst));
-		cityLst = oraDataLoadDao.getAllProjects();
+		cityLst = locationLst.stream().map(l->l.getCId()).distinct().collect(Collectors.toList());
 		logger.info("cityLst:"+JSONConverter.toString(cityLst));
-		areaLst = oraDataLoadDao.getAllEventCategories();
-		logger.info("areaLst:"+JSONConverter.toString(areaLst));*/
+		areaLst = locationLst.stream().map(l->l.getResAreaId()).distinct().collect(Collectors.toList());
+		logger.info("areaLst:"+JSONConverter.toString(areaLst));
+		pinCodeLst = locationLst.stream().map(l->l.getCodeId()).distinct().collect(Collectors.toList());
+		logger.info("pinCodeLst:"+JSONConverter.toString(pinCodeLst));
 		
 		for (int r = 1; r < rows; r++) {
 			XSSFRow row = sheet.getRow(r);
@@ -316,48 +324,86 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 				String stateName = isValidCell(row.getCell(1))?row.getCell(1).getRichStringCellValue().getString():null;
 				String cityName = isValidCell(row.getCell(2))?row.getCell(2).getRichStringCellValue().getString():null;
 				String areaName = isValidCell(row.getCell(3))?row.getCell(3).getRichStringCellValue().getString():null;
-				String pinName = isValidCell(row.getCell(4))?row.getCell(4).getRichStringCellValue().getString():null;
+				String pinNum = isValidCell(row.getCell(4))?row.getCell(4).getRawValue():"-1";
 				
-				/*
-				if(p==null) {
-					p = new Project();
-					p.setTitle(projectName);
-					p.setDescription(projectName);
-					p.setCreatedBy(ascId);
-					p.setStatus("A");
-					p.setPersist(Boolean.TRUE);
-					if(c==null){
-						c = new EventCategory();
-						c.setTitle(categoryName);
-						c.setDescription(projectName+" - "+categoryName);
-						c.setCreatedBy(ascId);
-						c.setStatus("A");
-						c.setPersist(Boolean.TRUE);
-						eventCatLst.add(c);
-					}else{
-						c.setUpdate(Boolean.TRUE);
-					}
-					projLst.add(p);
+				/*logger.info("**countryName:"+countryName);
+				logger.info("**cityName:"+cityName);
+				logger.info("**areaName:"+areaName);
+				logger.info("**pinNum:"+pinNum);*/
+				
+				cntry = new Country();
+				cntry.setName(countryName);
+				if(countryLst.contains(cntry)){
+					cntry = countryLst.get(countryLst.indexOf(cntry));
+					cntry.setUpdate(Boolean.TRUE);
 				}else{
-					if(c==null){
-						c = new EventCategory();
-						c.setTitle(categoryName);
-						c.setDescription(projectName+" - "+categoryName);
-						c.setCreatedBy(ascId);
-						c.setPersist(Boolean.TRUE);
-						c.setStatus("A");
-						eventCatLst.add(c);
-					}
+					cntry.setPersist(Boolean.TRUE);
+					cntry.setCreatedBy(ascId);
+					countryLst.add(cntry);
 				}
-				c.setProject(p);*/
+				
+				state = new State();
+				state.setName(stateName);
+				if(stateLst.contains(state)){
+					state = stateLst.get(stateLst.indexOf(state));
+					state.setUpdate(Boolean.TRUE);
+				}else{
+					state.setPersist(Boolean.TRUE);
+					state.setCreatedBy(ascId);
+					stateLst.add(state);
+					state.setCountry(cntry);
+				}
+				
+				city = new City();
+				city.setName(cityName);
+				if(cityLst.contains(city)){
+					city = cityLst.get(cityLst.indexOf(city));
+					city.setUpdate(Boolean.TRUE);
+					
+				}else{
+					city.setPersist(Boolean.TRUE);
+					city.setCreatedBy(ascId);
+					cityLst.add(city);
+					city.setState(state);
+				}
+				
+				area = new ResidenceArea();
+				area.setName(areaName);
+				if(areaLst.contains(area)){
+					area = areaLst.get(areaLst.indexOf(area));
+					area.setUpdate(Boolean.TRUE);
+					
+				}else{
+					area.setPersist(Boolean.TRUE);
+					area.setCreatedBy(ascId);
+					area.setCity(city);
+					areaLst.add(area);
+				}
+				
+				code = new PinCode();
+				code.setName(pinNum);
+				if(pinCodeLst.contains(code)){
+					code = pinCodeLst.get(pinCodeLst.indexOf(code));
+					code.setUpdate(Boolean.TRUE);
+					
+				}else{
+					code.setPersist(Boolean.TRUE);
+					code.setCreatedBy(ascId);
+					code.setArea(area);
+					pinCodeLst.add(code);
+				}
 			}
-			logger.info("Out of populateGeographyData");
-		}
+		}		
+		geoMap.put("COUNTRY", countryLst);
+		geoMap.put("STATE", stateLst);
+		geoMap.put("CITY", cityLst);
+		geoMap.put("AREA", areaLst);
+		geoMap.put("CODE", pinCodeLst);
 		
-		//Save Project & Category data
-		oraDataLoadDao.saveLocation(locationLst);
+		//Save Geo data
+		oraDataLoadDao.saveLocation(geoMap);
 	
-		
+		logger.info("Out of populateGeographyData");		
 	}
 	
 	private void populateProjectCategoryData(XSSFSheet sheet, Long ascId) 

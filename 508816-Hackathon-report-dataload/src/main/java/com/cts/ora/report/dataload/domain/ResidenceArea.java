@@ -25,13 +25,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Entity()
 @Table(name="ORA_REF_GEO_RES_AREA", 
 uniqueConstraints=
      @UniqueConstraint(columnNames={"name"})
 )
-@Data @EqualsAndHashCode(of={"name"})
+@Data @EqualsAndHashCode(of={"name"}) @ToString(exclude={"pinCode"})
 public class ResidenceArea {
 	
 	@Id
@@ -58,5 +59,10 @@ public class ResidenceArea {
 	
 	@OneToOne(mappedBy="area") @JsonIgnore
 	private PinCode pinCode;
+	
+	@Transient
+	private boolean isPersist;
+	@Transient
+	private boolean isUpdate;
 
 }
