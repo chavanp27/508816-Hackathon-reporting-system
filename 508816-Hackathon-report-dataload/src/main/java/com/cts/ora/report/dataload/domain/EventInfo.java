@@ -24,7 +24,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity(name="ora_outreach_event_info")
-@Getter @Setter @ToString
+@Getter @Setter @ToString(exclude= {"poc","volunteers"})
 public class EventInfo {
 	
 	@Id
@@ -39,7 +39,7 @@ public class EventInfo {
 	private EventCategory category;
 	
 	@NotBlank
-	private String title;
+	private String eventName;
 	
 	private String description;
 	
@@ -65,7 +65,16 @@ public class EventInfo {
 	@OneToMany(mappedBy="id") @JsonIgnore
 	private Set<Associate> volunteers;
 	
+	private Integer totalVolunteersCount;
+	
+	private Float totalVolunteerHrs;
+	
+	private Float totalTravelHrs;
+	
+	private Float totalEventHrs;
+	
 	private Integer livesImpacted;
+	
 	
 	@Column(name="on_weekend")
 	@Type(type= "org.hibernate.type.NumericBooleanType")

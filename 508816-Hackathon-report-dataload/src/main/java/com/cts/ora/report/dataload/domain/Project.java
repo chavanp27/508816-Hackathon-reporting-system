@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Entity()
 @Table(
@@ -31,7 +32,7 @@ import lombok.EqualsAndHashCode;
         uniqueConstraints=
             @UniqueConstraint(columnNames={"project_title"})
     )
-@Data @EqualsAndHashCode(of={"title"})
+@Data @EqualsAndHashCode(of={"title"}) @ToString(exclude= {"categories"})
 public class Project {
 	
 	@Id @Column

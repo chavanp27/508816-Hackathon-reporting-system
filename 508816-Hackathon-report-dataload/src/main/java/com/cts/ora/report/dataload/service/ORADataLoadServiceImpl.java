@@ -10,8 +10,10 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -263,8 +265,8 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		
 		try {
 			wb = new XSSFWorkbook(filePath);
-			populateProjectCategoryData(wb.getSheetAt(0),ascId);
-			populateGeographyData(wb.getSheetAt(1),ascId);
+			populateProjectCategoryData(wb.getSheet("ProjectCategory"),ascId);
+			populateGeographyData(wb.getSheet("Geography"),ascId);
 			
 			status =1;
 			}catch(Exception e){
@@ -326,11 +328,6 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 				String cityName = isValidCell(row.getCell(2))?row.getCell(2).getRichStringCellValue().getString():null;
 				String areaName = isValidCell(row.getCell(3))?row.getCell(3).getRichStringCellValue().getString():null;
 				String pinNum = isValidCell(row.getCell(4))?row.getCell(4).getRawValue():"-1";
-				
-				/*logger.info("**countryName:"+countryName);
-				logger.info("**cityName:"+cityName);
-				logger.info("**areaName:"+areaName);
-				logger.info("**pinNum:"+pinNum);*/
 				
 				cntry = new Country();
 				cntry.setName(countryName);
@@ -573,9 +570,10 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		logger.info("Into parseEventSummaryInputFile");
 		List<EventInfo> eventInfoList=new ArrayList<>();
 		EventInfo evntInfo=null;
-		List<Associate> existingAssociates=null;
+		Set<Long> associateLst=new HashSet();
 		List<Project> projLst = null;
 		List<EventCategory> eventCatLst = null;
+		List<Associate> ascLst = null;
 		
 		XSSFWorkbook  wb=null;
 		
@@ -587,6 +585,11 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			int rows = sheet.getPhysicalNumberOfRows();
 			logger.info("Event Summary Sheet has " + rows+ " row(s).");
 			logger.info("filePath::"+filePath);
+			
+			List<Project> allProjLst = oraDataLoadDao.getAllProjects();
+			logger.info("allProjLst:"+JSONConverter.toString(allProjLst));
+			eventCatLst = oraDataLoadDao.getAllEventCategories();
+			logger.info("eventCatLst:"+JSONConverter.toString(eventCatLst));
 			
 			for (int r = 1; r < rows; r++) {
 				XSSFRow row = sheet.getRow(r);
@@ -614,9 +617,10 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					String totEventHours = isValidCell(row.getCell(14))?row.getCell(14).getRawValue():"-1";
 					String totLivesImpact = isValidCell(row.getCell(15))?row.getCell(15).getRawValue():"-1";
 					
-					String pocs = isValidCell(row.getCell(18))?row.getCell(18).getRichStringCellValue().getString():null;
+					String pocs = isValidCell(row.getCell(18))?row.getCell(18).getRawValue():"-1";
 					List<String> empIdLst = Arrays.asList(pocs.split(";"));
 					
+					associateLst.addAll(empIdLst.stream().map(id->Long.parseLong(id)).collect(Collectors.toSet()));
 					
 					logger.info("eventId:"+eventId);
 					logger.info("isWeekend:"+isWeekend);
@@ -625,14 +629,43 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					Location loc = oraDataLoadDao.getLocationBasedOnPinCode(eventAddr.substring(eventAddr.lastIndexOf("-")+1));
 					logger.info("loc:"+loc);
 					
+					Project proj = allProjLst.stream().filter(p->p.getTitle().equals(projectName)).findFirst().get();
+					EventCategory cat = eventCatLst.stream().filter(c->c.getTitle().equals(catName)).findFirst().get();
+					logger.info("proj:"+proj);
+					logger.info("cat:"+cat);
+					
+					
 					evntInfo = new EventInfo();
+					evntInfo.setEventId(eventId);
+					evntInfo.setEventName(eventName);
+					evntInfo.setProject(proj);
+					evntInfo.setCategory(cat);
+					evntInfo.setBeneficiaryName(beneficiaryName);
+					//evntInfo.setDescription(desc);
+					evntInfo.setOnWeekend(isWeekend);
+					evntInfo.setEventDate(sdf.parse(eventDate));
+					evntInfo.setBaseLoc(baseLoc);
+					evntInfo.setLocation(loc);
+					//evntInfo.setCreatedBy(createdBy);
+					evntInfo.setEventAddress(eventAddr);
+					evntInfo.setTotalVolunteersCount(Integer.parseInt(totVolCount));
+					evntInfo.setTotalVolunteerHrs(Float.parseFloat(totVolHours));
+					evntInfo.setTotalTravelHrs(Float.parseFloat(totTravelHours));
+					evntInfo.setTotalEventHrs(Float.parseFloat(totEventHours));
+					evntInfo.setLivesImpacted(Integer.parseInt(totLivesImpact));
+					//evntInfo.setPoc(poc);
+
+					//cal Period from eventDate
 					
 					
 					
 					eventInfoList.add(evntInfo);
 				}
 			}
+			
+			//ascLst = oraDataLoadDao.
 			logger.info("eventInfoList::"+JSONConverter.toString(eventInfoList));
+			logger.info("associateLst::"+associateLst);
 			
 			}catch(Exception e){
 				e.printStackTrace();

@@ -12,7 +12,7 @@ import javax.persistence.PersistenceUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import com.cts.ora.report.dataload.domain.Associate;
 import com.cts.ora.report.dataload.domain.BusinessUnit;
@@ -29,7 +29,8 @@ import com.cts.ora.report.dataload.domain.State;
 import com.cts.ora.report.dataload.repository.AssociateRepository;
 import com.cts.ora.report.exception.ORAException;
 
-@Component
+@Repository
+@org.springframework.transaction.annotation.Transactional
 public class ORADataLoadDaoImpl implements ORADataLoadDao {
 	
 	Logger logger = LoggerFactory.getLogger(ORADataLoadDaoImpl.class);
@@ -48,8 +49,9 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 	@Override
 	public void saveAssociates(List<Associate> associates) {
 		logger.info("Into saveAssociates:"+associates);
-		 em = emf.createEntityManager();
+		 
 		try {
+			em = emf.createEntityManager();
 			em.getTransaction().begin();
 			List<BusinessUnit> bus = associates.stream().filter(a->!a.isBuExists()).map(a->a.getBu()).distinct().collect(Collectors.toList());
 			for(BusinessUnit bu:bus){
@@ -59,8 +61,6 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 				em.persist(a);
 			}
 		    em.getTransaction().commit();
-			em.close();
-			
 		}catch(Exception e) {
 			logger.error("Error during saveAssociates:"+e.getMessage());
 			try {
@@ -68,6 +68,10 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 				throw new ORAException("DATA_SAVE_FAILURE", "Associate Data not saved", e);
 			} catch (Exception e1) {
 				logger.error("Error during rollback");
+			}
+		}finally {
+			if(em!=null){
+				em.close();
 			}
 		}
 		logger.info("Out of saveAssociates");
@@ -104,11 +108,10 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 			cq.select(asc);
 			TypedQuery<Associate> q = em.createQuery(cq);
 			associates = q.getResultList();*/
-			
-			 em.close();
 		} catch (Exception e) {
 			logger.error(e.getMessage());
-			throw new ORAException("0001","Error during getAllAssociates",e);
+			//throw new ORAException("0001","Error during getAllAssociates",e);
+			return null;
 		}finally {
 			if(em!=null){
 				em.close();
@@ -129,7 +132,8 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 			buList = em.createQuery("SELECT b FROM BusinessUnit b", BusinessUnit.class).getResultList();
 		} catch (Exception e) {
 			logger.error("Error in getAllBusinessUnits:"+e.getMessage());
-			throw new ORAException("FETCH_BU_FAILURE", "Fetch BU failure", e);
+			//throw new ORAException("FETCH_BU_FAILURE", "Fetch BU failure", e);
+			return null;
 		}finally {
 			if(em!=null){
 				em.close();
@@ -150,8 +154,9 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 			reportType = em.createQuery("SELECT r FROM ReportType r WHERE r.reportType = :repType", ReportType.class)
 							.setParameter("repType", name).getSingleResult();
 		} catch (Exception e) {
-			logger.error("Error in getReportTypeByName:"+e.getMessage());
-			throw new ORAException();
+			logger.error("Error in getReportTypeByName:"+e);
+			//throw new ORAException();
+			return null;
 		}finally {
 			if(em!=null){
 				em.close();
@@ -178,6 +183,10 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		} catch (Exception e) {
 			logger.error("Error in updateIncomingFiles:"+e.getMessage());
 			throw new ORAException("INCOMING_FILE_SAVE_FAILURE", "Incoming Files not saved", e);
+		}finally {
+			if(em!=null){
+				em.close();
+			}
 		}
 		logger.info("Out of updateIncomingFiles");
 		return incomingFiles;
@@ -199,6 +208,10 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 			e.printStackTrace();
 			logger.error("Error in updateIncomingFileStatus:"+e);
 			throw new ORAException("INCOMING_FILE_STATUS_FAILURE", "Incoming Files status update failure", e);
+		}finally {
+			if(em!=null){
+				em.close();
+			}
 		}
 		logger.info("Out of updateIncomingFileStatus");
 	}
@@ -212,7 +225,12 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 			projectLst = em.createQuery("SELECT p FROM Project p", Project.class).getResultList();
 		} catch (Exception e) {
 			logger.error("Error in getAllProjects:"+e.getMessage());
-			throw new ORAException("FETCH_PROJECT_FAILURE", "Fetch Proj failure", e);
+			//throw new ORAException("FETCH_PROJECT_FAILURE", "Fetch Proj failure", e);
+			return null;
+		}finally {
+			if(em!=null){
+				em.close();
+			}
 		}
 		logger.info("Out of getAllProjects");
 		return projectLst;
@@ -228,7 +246,12 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 			eventCategoryLst = em.createQuery("SELECT e FROM EventCategory e", EventCategory.class).getResultList();
 		} catch (Exception e) {
 			logger.error("Error in getAllEventCategories:"+e.getMessage());
-			throw new ORAException("FETCH_CATEGORY_FAILURE", "Fetch Category failure", e);
+			//throw new ORAException("FETCH_CATEGORY_FAILURE", "Fetch Category failure", e);
+			return null;
+		}finally {
+			if(em!=null){
+				em.close();
+			}
 		}
 		logger.info("Out of getAllEventCategories");
 		return eventCategoryLst;
@@ -238,10 +261,9 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 	@Override
 	public void saveProjectAndCategoryInfo(List<Project> projLst, List<EventCategory> eventCatLst) {
 		logger.info("Into saveProjectAndCategoryInfo");
-		
-		logger.info("projLst::"+projLst);
-		logger.info("eventCatLst::"+eventCatLst);
+
 		try {
+			em = emf.createEntityManager();
 			em.getTransaction().begin();
 			projLst.stream().forEach(p->{
 				if(p.isPersist()){
@@ -266,11 +288,11 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 				throw new ORAException("PROJECT_CATEGORY_LOAD_FAILURE", "Project/Category not saved", e);
 			} catch (Exception e1) {
 				logger.error("Error during rollback");
-			}/*finally {
+			}finally {
 				if(em!=null){
 					em.close();
 				}
-			}*/
+			}
 		}
 		
 		logger.info("Out of saveProjectAndCategoryInfo");
@@ -293,7 +315,12 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 			
 		} catch (Exception e) {
 			logger.error("Error in getLocationById:"+e.getMessage());
-			throw new ORAException("FETCH_PROJECT_FAILURE", "Save geogrpahy data failure", e);
+			//throw new ORAException("FETCH_PROJECT_FAILURE", "Save geogrpahy data failure", e);
+			return null;
+		}finally {
+			if(em!=null){
+				em.close();
+			}
 		}
 		logger.info("Out of getLocationById");
 		return locLst;
@@ -316,7 +343,12 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 			
 		} catch (Exception e) {
 			logger.error("Error in getCountryById:"+e.getMessage());
-			throw new ORAException("FETCH_PROJECT_FAILURE", "Save geogrpahy data failure", e);
+			//throw new ORAException("FETCH_PROJECT_FAILURE", "Save geogrpahy data failure", e);
+			return null;
+		}finally {
+			if(em!=null){
+				em.close();
+			}
 		}
 		logger.info("Out of getCountryById");
 		return countryLst;
@@ -329,13 +361,17 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		try {
 			em = emf.createEntityManager();
 			if(pinNum!=null){
-				location = em.createQuery("SELECT l FROM Location l, PinCode p ON l.codeId=p.codeId WHERE p.name = :pinNum", Location.class)
+				location = em.createQuery("SELECT l FROM Location l, PinCode p WHERE l.codeId=p.codeId AND p.name = :pinNum", Location.class)
 							.setParameter("pinNum", pinNum).getSingleResult();
 			}
 			
 		} catch (Exception e) {
 			logger.error("Error in getLocationBasedOnPinCode:"+e.getMessage());
-			throw new ORAException("FETCH_PROJECT_FAILURE", "Save geogrpahy data failure", e);
+			return null;
+		}finally {
+			if(em!=null){
+				em.close();
+			}
 		}
 		logger.info("Out of getLocationBasedOnPinCode");
 		return location;
@@ -354,6 +390,7 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		List<PinCode> pinCodeLst = geoMap.get("CODE");
 		
 		try {
+			em = emf.createEntityManager();
 			em.getTransaction().begin();
 			
 			countryLst.stream().forEach(c->{
@@ -421,6 +458,10 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 				throw new ORAException("GEOGRAPHY_DATA_LOAD_FAILURE", "Project/Category not saved", e);
 			} catch (Exception e1) {
 				logger.error("Error during rollback");
+			}
+		}finally {
+			if(em!=null){
+				em.close();
 			}
 		}
 		

@@ -20,13 +20,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Entity()
 @Table(name="ora_ref_location", 
 uniqueConstraints=
      @UniqueConstraint(columnNames={"cntryId","stateId","cityId","resAreaId","codeId"})
 )
-@Data @EqualsAndHashCode(exclude={"locId","isPersist","isUpdate"})
+@Data @EqualsAndHashCode(exclude={"locId","isPersist","isUpdate"}) @ToString(exclude= {"events"})
 public class Location {
 	
 	@Id
