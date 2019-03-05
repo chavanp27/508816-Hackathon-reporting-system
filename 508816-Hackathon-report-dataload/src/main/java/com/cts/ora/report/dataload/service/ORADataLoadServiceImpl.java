@@ -7,8 +7,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,7 +18,7 @@ import java.util.stream.Stream;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -218,8 +217,8 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		List<Associate> ascLst=null;
 		try{
 			if(eventDetailFile!=null && eventDetailFile.getFileLoc()!=null && !"".equals(eventDetailFile.getFileLoc())){
-				ascLst = parseAssociateInputFile(eventDetailFile.getFileLoc());
-				oraDataLoadDao.saveAssociates(ascLst);
+				//ascLst = parseAssociateInputFile(eventDetailFile.getFileLoc());
+				//oraDataLoadDao.saveAssociates(ascLst);
 				statusCode = 1;
 			}
 				
@@ -536,7 +535,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					//String loc = isValidCell(row.getCell(3))?row.getCell(3).getRichStringCellValue().getString():null;
 
 					a = new Associate();
-					a.setId(Integer.parseInt(empId+""));
+					a.setId(Long.parseLong(empId+""));
 					a.setAscName(name);
 					a.setDesignation(designation);
 					
@@ -578,6 +577,11 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		return ascLst;
 	}
 	
+	private String getCellValue(Cell cell){
+		DataFormatter df = new DataFormatter();
+		return df.formatCellValue(isValidCell(cell)?cell:null);
+	}
+	
 	private List<EventInfo> parseEventSummaryInputFile(String filePath){
 		logger.info("Into parseEventSummaryInputFile");
 		List<EventInfo> eventInfoList=new ArrayList<>();
@@ -589,7 +593,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		
 		XSSFWorkbook  wb=null;
 		
-		SimpleDateFormat sdf = new SimpleDateFormat("dd-mm-yy");
+		SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yy");
 		
 		try {
 			wb = new XSSFWorkbook(filePath);
@@ -610,25 +614,29 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					if(!isApproved.equalsIgnoreCase("Approved")){
 						continue;
 					}
-					String eventId = isValidCell(row.getCell(0))?row.getCell(0).getRawValue():"-1";
-					String baseLoc = isValidCell(row.getCell(2))?row.getCell(2).getRichStringCellValue().getString():null;
-					String beneficiaryName = isValidCell(row.getCell(3))?row.getCell(3).getRichStringCellValue().getString():null;
-					String eventAddr = isValidCell(row.getCell(4))?row.getCell(4).getRichStringCellValue().getString():null;
-					String projectName = isValidCell(row.getCell(6))?row.getCell(6).getRichStringCellValue().getString():null;
-					String catName = isValidCell(row.getCell(7))?row.getCell(7).getRichStringCellValue().getString():null;
+					String eventId = getCellValue(row.getCell(0));
+					logger.info("eventId:"+eventId);
+					String baseLoc = getCellValue(row.getCell(2));
+					String beneficiaryName = getCellValue(row.getCell(3));
+					String eventAddr = getCellValue(row.getCell(4));
+					String projectName = getCellValue(row.getCell(6));
+					String catName = getCellValue(row.getCell(7));
 					
-					String eventName = isValidCell(row.getCell(8))?row.getCell(8).getRichStringCellValue().getString():null;
-					//String desc = isValidCell(row.getCell(9))?row.getCell(9).getRichStringCellValue().getString():null;
-					String eventDate = isValidCell(row.getCell(10))?row.getCell(10).getRichStringCellValue().getString():null;
-					boolean isWeekend = isWeekend(sdf.parse(eventDate));
+					String eventName = getCellValue(row.getCell(8));
+					//String desc = getCellValue(row.getCell(9));
+					String eventDate = sdf.format(row.getCell(10).getDateCellValue());//getCellValue(row.getCell(10));
+					logger.info("eventDate:"+eventDate);
+					boolean isWeekend = ORAUtil.isWeekend(sdf.parse(eventDate));
 					
-					String totVolCount = isValidCell(row.getCell(11))?row.getCell(11).getRawValue():"-1";
-					String totVolHours = isValidCell(row.getCell(12))?row.getCell(12).getRawValue():"-1";
-					String totTravelHours = isValidCell(row.getCell(13))?row.getCell(13).getRawValue():"-1";
-					String totEventHours = isValidCell(row.getCell(14))?row.getCell(14).getRawValue():"-1";
-					String totLivesImpact = isValidCell(row.getCell(15))?row.getCell(15).getRawValue():"-1";
 					
-					String pocs = isValidCell(row.getCell(18))?row.getCell(18).getRawValue():"-1";
+					
+					String totVolCount = getCellValue(row.getCell(11));
+					String totVolHours = getCellValue(row.getCell(12));
+					String totTravelHours = getCellValue(row.getCell(13));
+					String totEventHours = getCellValue(row.getCell(14));
+					String totLivesImpact = getCellValue(row.getCell(15));
+					
+					String pocs = getCellValue(row.getCell(18));
 					List<String> empIdLst = Arrays.asList(pocs.split(";"));
 					
 					associateLst.addAll(empIdLst.stream().map(id->Long.parseLong(id)).collect(Collectors.toSet()));
@@ -661,22 +669,34 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					evntInfo.setTotalTravelHrs(Float.parseFloat(totTravelHours));
 					evntInfo.setTotalEventHrs(Float.parseFloat(totEventHours));
 					evntInfo.setLivesImpacted(Integer.parseInt(totLivesImpact));
-					//evntInfo.setPoc(poc);
-
+					evntInfo.setPoc(empIdLst.stream().map(a-> {Associate asc = new Associate();
+											asc.setId(Long.parseLong(a)); return asc;})
+											.collect(Collectors.toSet()));
+					logger.info("evntInfo.getPoc::"+evntInfo.getPoc());
 					//calc Period from eventDate
 					evntInfo.setPeriod(ORAUtil.getPeriod(sdf.parse(eventDate)));
-					
-					
-					
 					eventInfoList.add(evntInfo);
 				}
 			}
+			logger.info("eventInfoList::"+JSONConverter.toString(eventInfoList));
+			ascLst = oraDataLoadDao.getAssociateById(associateLst.stream().collect(Collectors.toList()));
+			logger.info("ascLst::"+ascLst);
 			
+			for(EventInfo e:eventInfoList){
+				for(Associate a:e.getPoc()){
+					if(ascLst.indexOf(a)>-1){
+						a = ascLst.get(ascLst.indexOf(a));
+						logger.info("match found a::"+a);
+					}else{
+						a=null;
+					}
+					if(e.getPoc()!=null){
+						e.getPoc().removeAll(Collections.singleton(null));
+					}
+				}
+			}
 			
 			logger.info("eventInfoList::"+JSONConverter.toString(eventInfoList));
-			logger.info("associateLst::"+associateLst);
-			ascLst = oraDataLoadDao.getAssociateById(associateLst.stream().collect(Collectors.toList()));
-			
 			}catch(Exception e){
 				e.printStackTrace();
 				logger.error("Error in parseEventSummaryInputFile:"+e);
@@ -692,18 +712,6 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			}
 		logger.info("Out of parseEventSummaryInputFile");
 		return eventInfoList;
-	}
-	
-	private boolean isWeekend(Date date) {
-		logger.info("Input Date: " + date);
-		Calendar c1 = Calendar.getInstance();
-		c1.setTime(date);
-		if ((c1.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) 
-				|| (Calendar.DAY_OF_WEEK == Calendar.SUNDAY)) {
-			return Boolean.TRUE;
-		} else {
-			return Boolean.FALSE;
-		}
 	}
 	
 	private boolean isAssociateExists(List<Associate> existingAssociates,Integer empId){
@@ -728,7 +736,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		return (cell!=null && !cell.getCellType().equals(CellType.BLANK));
 	}
 	
-	private Object getCellValue(Cell cell){
+	/*private Object getCellValue(Cell cell){
 		Object value= null;
 		switch (cell.getCellType()) {
         case STRING:
@@ -754,7 +762,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
             System.out.println();
     }
 		return value;
-	}
+	}*/
 	
 	public static void main(String[] args){
 		//String fp = "C:\\Users\\hp\\Desktop\\Cognizant FSE\\Input Data\\Associate Details.xlsx";

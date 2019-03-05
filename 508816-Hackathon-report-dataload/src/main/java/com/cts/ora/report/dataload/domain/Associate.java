@@ -28,7 +28,7 @@ import lombok.ToString;
 
 @Entity(name="ora_outreach_associate")
 @Getter @Setter @ToString(exclude= {"bu"})
-@EqualsAndHashCode(of= {"id","name","designation"})
+@EqualsAndHashCode(of= {"id"})
 @SqlResultSetMapping(name = "AssociateMapping", entities = {
 		@EntityResult(entityClass = com.cts.ora.report.dataload.domain.Associate.class, fields = {
 				@FieldResult(name = "id", column = "asc_id"), 
@@ -42,7 +42,7 @@ public class Associate {
 	
 	@Id
 	@Column(name="asc_id")
-	private Integer id;
+	private Long id;
 	
 	@Column @NotBlank
 	private String ascName;

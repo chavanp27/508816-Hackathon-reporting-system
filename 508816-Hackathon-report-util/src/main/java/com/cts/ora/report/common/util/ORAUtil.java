@@ -18,6 +18,18 @@ public class ORAUtil {
 
 	static Logger logger = LoggerFactory.getLogger(ORAUtil.class);
 
+	public static boolean isWeekend(Date date) {
+		logger.info("Input Date: " + date);
+		Calendar c1 = Calendar.getInstance();
+		c1.setTimeInMillis(date.getTime());
+		if ((c1.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) 
+				|| (Calendar.DAY_OF_WEEK == Calendar.SUNDAY)) {
+			return Boolean.TRUE;
+		} else {
+			return Boolean.FALSE;
+		}
+	}
+	
 	public static Integer getPeriod(Date date) {
 		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMM");
 		Calendar cal = Calendar.getInstance();

@@ -59,10 +59,10 @@ public class EventInfo {
 	@JoinColumn(name="locId",insertable=true,updatable=true)
 	private Location location;
 	
-	@OneToMany(mappedBy="id") @JsonIgnore
+	@OneToMany(mappedBy="id")
 	private Set<Associate> poc;
 	
-	@OneToMany(mappedBy="id") @JsonIgnore
+	@OneToMany(mappedBy="id") 
 	private Set<Associate> volunteers;
 	
 	private Integer totalVolunteersCount;
