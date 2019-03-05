@@ -664,7 +664,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					//evntInfo.setPoc(poc);
 
 					//calc Period from eventDate
-					ORAUtil.getPeriod(sdf.parse(eventDate));
+					evntInfo.setPeriod(ORAUtil.getPeriod(sdf.parse(eventDate)));
 					
 					
 					
