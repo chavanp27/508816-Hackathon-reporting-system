@@ -327,6 +327,31 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 	}
 	
 	@Override
+	public List<Associate> getAssociateById(List<Long> ascIdLst) {
+		logger.info("Into getAssociateById::");
+		List<Associate> associates=null;
+		try {
+			em = emf.createEntityManager();
+			String sql = "SELECT a.ASC_NAME,a.asc_id,a.created_date,a.designation,"
+								+ "a.is_poc,a.is_volunteer,a.bu_id AS asc_bId  "
+								+ "FROM ora_outreach_associate a inner join ora_ref_assc_bu b on a.bu_id=b.bu_id "
+								+ "WHERE a.asc_id IN (:ascIdLst)";
+			associates =   em.createNativeQuery(sql,"AssociateMapping")
+								.setParameter("ascIdLst", ascIdLst).getResultList();
+			
+		} catch (Exception e) {
+			logger.error("Error in getAssociateById:"+e.getMessage());
+			return null;
+		}finally {
+			if(em!=null){
+				em.close();
+			}
+		}
+		logger.info("Out of getAssociateById");
+		return associates;
+	}
+	
+	@Override
 	public List<Country> getCountryById(Long cntryId) {
 		logger.info("Into getCountryById:: "+cntryId);
 		List<Country> countryLst=null;
