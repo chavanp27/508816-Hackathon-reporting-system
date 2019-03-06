@@ -7,6 +7,7 @@ import com.cts.ora.report.dataload.domain.Associate;
 import com.cts.ora.report.dataload.domain.BusinessUnit;
 import com.cts.ora.report.dataload.domain.Country;
 import com.cts.ora.report.dataload.domain.EventCategory;
+import com.cts.ora.report.dataload.domain.EventInfo;
 import com.cts.ora.report.dataload.domain.IncomingFile;
 import com.cts.ora.report.dataload.domain.Location;
 import com.cts.ora.report.dataload.domain.Project;
@@ -50,6 +51,6 @@ public interface ORADataLoadDao {
 	
 	//void saveCategory(Long fileId, String status);
 	
-	void saveEventInfo();
+	void saveEventInfo(List<EventInfo> eventInfoList);
 
 }

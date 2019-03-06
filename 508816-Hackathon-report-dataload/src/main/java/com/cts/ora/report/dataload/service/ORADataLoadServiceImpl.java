@@ -189,24 +189,24 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	}
 	
 	private Integer loadEventSummaryData(ORAFile eventSummaryFile) {
-		logger.info("Into loadAssociateData");
+		logger.info("Into loadEventSummaryData");
 		Integer statusCode = -1;
 		List<EventInfo> eventInfoList=null;
 		try{
 			if(eventSummaryFile!=null && eventSummaryFile.getFileLoc()!=null && !"".equals(eventSummaryFile.getFileLoc())){
 				eventInfoList = parseEventSummaryInputFile(eventSummaryFile.getFileLoc());
-				//oraDataLoadDao.saveEventInfo(eventInfoList);
+				oraDataLoadDao.saveEventInfo(eventInfoList);
 				statusCode = 1;
 			}
 				
 		}catch(ORAException e){
-			logger.error("Exception in loadAssociateData->"+e);
+			logger.error("Exception in loadEventSummaryData->"+e);
 			
 		}catch (Exception e) {
-			logger.error("Exception in loadAssociateData->"+e);
+			logger.error("Exception in loadEventSummaryData->"+e);
 		}
 				
-		logger.info("Out of loadAssociateData");
+		logger.info("Out of loadEventSummaryData");
 		return statusCode;
 	}
 	
@@ -678,13 +678,15 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 				}
 			}
 			ascLst = oraDataLoadDao.getAssociateById(associateLst.stream().collect(Collectors.toList()));
-			logger.info("ascLst::"+ascLst);
+			//logger.info("ascLst::"+ascLst);
 			
 			for(EventInfo e:eventInfoList){
 				Set<Associate> updatedAsc = new HashSet<>();
 				for(Associate a:e.getPoc()){
 					if(ascLst!=null && ascLst.indexOf(a)>-1){
 						a = ascLst.get(ascLst.indexOf(a));
+						a.setIsPOC(Boolean.TRUE);
+						a.setIsVolunteer(Boolean.TRUE);
 						updatedAsc.add(a);
 					}else{
 						a=null;

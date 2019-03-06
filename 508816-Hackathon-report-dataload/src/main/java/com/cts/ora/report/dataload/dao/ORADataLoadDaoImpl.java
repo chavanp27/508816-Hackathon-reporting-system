@@ -19,6 +19,7 @@ import com.cts.ora.report.dataload.domain.BusinessUnit;
 import com.cts.ora.report.dataload.domain.City;
 import com.cts.ora.report.dataload.domain.Country;
 import com.cts.ora.report.dataload.domain.EventCategory;
+import com.cts.ora.report.dataload.domain.EventInfo;
 import com.cts.ora.report.dataload.domain.IncomingFile;
 import com.cts.ora.report.dataload.domain.Location;
 import com.cts.ora.report.dataload.domain.PinCode;
@@ -78,15 +79,6 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 	}
 
 
-	@Override
-	public void saveEventInfo() {
-		logger.info("Into saveEventInfo");
-		
-		//entityManager.persist(eventInfo);
-		
-		logger.info("Out of saveEventInfo");
-		
-	}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -491,6 +483,41 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		}
 		
 		logger.info("Out of saveLocation");
+	}
+
+
+	@Override
+	public void saveEventInfo(List<EventInfo> eventInfoList) {
+		logger.info("Into saveEventInfo");
+
+		try {
+			em = emf.createEntityManager();
+			em.getTransaction().begin();
+			
+			eventInfoList.stream().forEach(e->{
+				e.getPoc().stream().forEach(a->{
+					em.merge(a);
+				});
+				em.persist(e);
+			});
+
+		    em.getTransaction().commit();
+		}catch(Exception e) {
+			logger.error("Error during saveEventInfo:"+e.getMessage());
+			try {
+				em.getTransaction().rollback();
+				throw new ORAException("EVENT)SUMM_LOAD_FAILURE", "Project/Category not saved", e);
+			} catch (Exception e1) {
+				logger.error("Error during rollback");
+			}finally {
+				if(em!=null){
+					em.close();
+				}
+			}
+		}
+		
+		logger.info("Out of saveEventInfo");
+		
 	}
 	
 	
