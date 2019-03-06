@@ -7,7 +7,6 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -593,7 +592,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		
 		XSSFWorkbook  wb=null;
 		
-		SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yy");
+		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yy");
 		
 		try {
 			wb = new XSSFWorkbook(filePath);
@@ -624,7 +623,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					
 					String eventName = getCellValue(row.getCell(8));
 					//String desc = getCellValue(row.getCell(9));
-					String eventDate = sdf.format(row.getCell(10).getDateCellValue());//getCellValue(row.getCell(10));
+					String eventDate = getCellValue(row.getCell(10)); //sdf.format(row.getCell(10).getDateCellValue());
 					logger.info("eventDate:"+eventDate);
 					boolean isWeekend = ORAUtil.isWeekend(sdf.parse(eventDate));
 					
@@ -678,22 +677,20 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					eventInfoList.add(evntInfo);
 				}
 			}
-			logger.info("eventInfoList::"+JSONConverter.toString(eventInfoList));
 			ascLst = oraDataLoadDao.getAssociateById(associateLst.stream().collect(Collectors.toList()));
 			logger.info("ascLst::"+ascLst);
 			
 			for(EventInfo e:eventInfoList){
+				Set<Associate> updatedAsc = new HashSet<>();
 				for(Associate a:e.getPoc()){
-					if(ascLst.indexOf(a)>-1){
+					if(ascLst!=null && ascLst.indexOf(a)>-1){
 						a = ascLst.get(ascLst.indexOf(a));
-						logger.info("match found a::"+a);
+						updatedAsc.add(a);
 					}else{
 						a=null;
 					}
-					if(e.getPoc()!=null){
-						e.getPoc().removeAll(Collections.singleton(null));
-					}
 				}
+				e.setPoc(updatedAsc);
 			}
 			
 			logger.info("eventInfoList::"+JSONConverter.toString(eventInfoList));

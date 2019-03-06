@@ -46,7 +46,7 @@ public class EventInfo {
 	private Integer period;
 	
 	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(pattern = "dd-MM-yyyy")
+	@DateTimeFormat(pattern = "dd-MM-yy")
 	private Date eventDate;
 	
 	private String beneficiaryName;
