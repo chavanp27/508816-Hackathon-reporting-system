@@ -23,7 +23,6 @@ import lombok.EqualsAndHashCode;
             @UniqueConstraint(columnNames={"docName"})
     )
 @Data @EqualsAndHashCode(of={"docName"}) 
-
 public class ORADocTemplate {
 	
 	@Id 

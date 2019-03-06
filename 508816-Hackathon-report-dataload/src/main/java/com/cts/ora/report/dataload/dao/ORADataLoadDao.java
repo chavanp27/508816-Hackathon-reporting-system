@@ -47,10 +47,6 @@ public interface ORADataLoadDao {
 	List<ResidenceArea> getAreaById(Long areaId);
 	List<PinCode> getPinCodeById(Long pinCodeId	);*/
 	
-	//void saveProjectCategoryMap(List<Event> projects);
-	
-	//void saveCategory(Long fileId, String status);
-	
 	void saveEventInfo(List<EventInfo> eventInfoList);
 
 }
