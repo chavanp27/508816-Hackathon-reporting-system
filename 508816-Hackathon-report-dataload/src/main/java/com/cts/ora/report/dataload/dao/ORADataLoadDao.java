@@ -3,15 +3,15 @@ package com.cts.ora.report.dataload.dao;
 import java.util.List;
 import java.util.Map;
 
-import com.cts.ora.report.dataload.domain.Associate;
-import com.cts.ora.report.dataload.domain.BusinessUnit;
-import com.cts.ora.report.dataload.domain.Country;
-import com.cts.ora.report.dataload.domain.EventCategory;
-import com.cts.ora.report.dataload.domain.EventInfo;
-import com.cts.ora.report.dataload.domain.IncomingFile;
-import com.cts.ora.report.dataload.domain.Location;
-import com.cts.ora.report.dataload.domain.Project;
-import com.cts.ora.report.dataload.domain.ReportType;
+import com.cts.ora.report.domain.model.Associate;
+import com.cts.ora.report.domain.model.BusinessUnit;
+import com.cts.ora.report.domain.model.Country;
+import com.cts.ora.report.domain.model.EventCategory;
+import com.cts.ora.report.domain.model.EventInfo;
+import com.cts.ora.report.domain.model.IncomingFile;
+import com.cts.ora.report.domain.model.Location;
+import com.cts.ora.report.domain.model.Project;
+import com.cts.ora.report.domain.model.ReportType;
 
 public interface ORADataLoadDao {
 	

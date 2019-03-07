@@ -19,10 +19,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.cts.ora.report.common.util.JSONConverter;
 import com.cts.ora.report.common.util.ORAMessageUtil;
 import com.cts.ora.report.common.vo.ORAResponse;
-import com.cts.ora.report.dataload.domain.Associate;
-import com.cts.ora.report.dataload.domain.BusinessUnit;
 import com.cts.ora.report.dataload.service.ORADataLoadService;
 import com.cts.ora.report.dataload.vo.ORADataLoadRequest;
+import com.cts.ora.report.domain.model.Associate;
+import com.cts.ora.report.domain.model.BusinessUnit;
 import com.cts.ora.report.file.vo.FileUploadResponse;
 
 @RestController

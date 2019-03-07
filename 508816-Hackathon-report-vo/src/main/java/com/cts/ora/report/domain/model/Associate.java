@@ -1,4 +1,4 @@
-package com.cts.ora.report.dataload.domain;
+package com.cts.ora.report.domain.model;
 
 import java.util.Date;
 
@@ -30,7 +30,7 @@ import lombok.ToString;
 @Getter @Setter @ToString(exclude= {"bu"})
 @EqualsAndHashCode(of= {"id"})
 @SqlResultSetMapping(name = "AssociateMapping", entities = {
-		@EntityResult(entityClass = com.cts.ora.report.dataload.domain.Associate.class, fields = {
+		@EntityResult(entityClass = com.cts.ora.report.domain.model.Associate.class, fields = {
 				@FieldResult(name = "id", column = "asc_id"), 
 				@FieldResult(name = "ascName", column = "ASC_NAME"),
 				@FieldResult(name = "isVolunteer", column = "is_volunteer"),

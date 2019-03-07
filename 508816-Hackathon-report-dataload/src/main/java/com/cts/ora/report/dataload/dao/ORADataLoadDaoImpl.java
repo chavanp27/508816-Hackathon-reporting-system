@@ -14,20 +14,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import com.cts.ora.report.dataload.domain.Associate;
-import com.cts.ora.report.dataload.domain.BusinessUnit;
-import com.cts.ora.report.dataload.domain.City;
-import com.cts.ora.report.dataload.domain.Country;
-import com.cts.ora.report.dataload.domain.EventCategory;
-import com.cts.ora.report.dataload.domain.EventInfo;
-import com.cts.ora.report.dataload.domain.IncomingFile;
-import com.cts.ora.report.dataload.domain.Location;
-import com.cts.ora.report.dataload.domain.PinCode;
-import com.cts.ora.report.dataload.domain.Project;
-import com.cts.ora.report.dataload.domain.ReportType;
-import com.cts.ora.report.dataload.domain.ResidenceArea;
-import com.cts.ora.report.dataload.domain.State;
 import com.cts.ora.report.dataload.repository.AssociateRepository;
+import com.cts.ora.report.domain.model.Associate;
+import com.cts.ora.report.domain.model.BusinessUnit;
+import com.cts.ora.report.domain.model.City;
+import com.cts.ora.report.domain.model.Country;
+import com.cts.ora.report.domain.model.EventCategory;
+import com.cts.ora.report.domain.model.EventInfo;
+import com.cts.ora.report.domain.model.IncomingFile;
+import com.cts.ora.report.domain.model.Location;
+import com.cts.ora.report.domain.model.PinCode;
+import com.cts.ora.report.domain.model.Project;
+import com.cts.ora.report.domain.model.ReportType;
+import com.cts.ora.report.domain.model.ResidenceArea;
+import com.cts.ora.report.domain.model.State;
 import com.cts.ora.report.exception.ORAException;
 
 @Repository

@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import com.cts.ora.report.dataload.domain.Associate;
+import com.cts.ora.report.domain.model.Associate;
 
 @Repository
 public interface AssociateRepository extends CrudRepository<Associate, Long> {

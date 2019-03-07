@@ -1,16 +1,14 @@
-package com.cts.ora.report.dataload.domain;
+package com.cts.ora.report.domain.model;
 
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -30,17 +28,17 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 @Entity()
-@Table(name="ORA_REF_GEO_CITY", 
+@Table(name="ORA_REF_GEO_RES_AREA", 
 uniqueConstraints=
      @UniqueConstraint(columnNames={"name"})
 )
-@Data @EqualsAndHashCode(of={"name"}) @ToString(exclude={"resAreas"})
-public class City {
+@Data @EqualsAndHashCode(of={"name"}) @ToString(exclude={"pinCode"})
+public class ResidenceArea {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO,generator="native")
 	@GenericGenerator(name = "native", strategy = "native")
-	private Integer cityId;
+	private Integer areaId;
 	
 	@Column @NotBlank
 	private String name;
@@ -50,14 +48,17 @@ public class City {
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private Date createdDate;
 	
+	@Transient
+	private List<String> zipCode;
+	
 	private Long createdBy;
 	
 	@OneToOne @JsonIgnore 
-	@JoinColumn(name="stateId",insertable=true,updatable=true)
-	private State state;
+	@JoinColumn(name="cityId",insertable=true,updatable=true)
+	private City city;
 	
-	@OneToMany(mappedBy="city") @JsonIgnore
-	private Set<ResidenceArea> resAreas;
+	@OneToOne(mappedBy="area") @JsonIgnore
+	private PinCode pinCode;
 	
 	@Transient
 	private boolean isPersist;

@@ -1,15 +1,17 @@
-package com.cts.ora.report.dataload.domain;
+package com.cts.ora.report.domain.model;
 
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -28,17 +30,17 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 @Entity()
-@Table(name="ORA_REF_GEO_COUNTRY", 
-       uniqueConstraints=
-            @UniqueConstraint(columnNames={"name"})
-    )
-@Data @EqualsAndHashCode(of={"name"}) @ToString(exclude={"states"})
-public class Country {
+@Table(name="ORA_REF_GEO_CITY", 
+uniqueConstraints=
+     @UniqueConstraint(columnNames={"name"})
+)
+@Data @EqualsAndHashCode(of={"name"}) @ToString(exclude={"resAreas"})
+public class City {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO,generator="native")
 	@GenericGenerator(name = "native", strategy = "native")
-	private Integer cntryId;
+	private Integer cityId;
 	
 	@Column @NotBlank
 	private String name;
@@ -50,8 +52,12 @@ public class Country {
 	
 	private Long createdBy;
 	
-	@OneToMany(mappedBy="country") @JsonIgnore
-	private Set<State> states;
+	@OneToOne @JsonIgnore 
+	@JoinColumn(name="stateId",insertable=true,updatable=true)
+	private State state;
+	
+	@OneToMany(mappedBy="city") @JsonIgnore
+	private Set<ResidenceArea> resAreas;
 	
 	@Transient
 	private boolean isPersist;

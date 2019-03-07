@@ -1,4 +1,4 @@
-package com.cts.ora.report.dataload.domain;
+package com.cts.ora.report.domain.model;
 
 import java.util.Date;
 
@@ -12,7 +12,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotBlank;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
@@ -22,39 +24,36 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 @Entity()
-@Table(
-		name="ORA_OUTREACH_ASSOCIATE_EVENT_MAP", 
-        uniqueConstraints=
-            @UniqueConstraint(columnNames={"asc_id","eventId"})
+@Table(name="ORA_REF_GEO_PINCODE", 
+       uniqueConstraints=
+            @UniqueConstraint(columnNames={"name"})
     )
-@Data @EqualsAndHashCode(of={"asc","event"}) @ToString(exclude={"asc","event"})
-public class AssociateEventMap {
+@Data @EqualsAndHashCode(of={"name"})
+public class PinCode {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO,generator="native")
 	@GenericGenerator(name = "native", strategy = "native")
-	private Long mapId;
+	private Integer codeId;
 	
-	@OneToOne @JsonIgnore 
-	@JoinColumn(name="asc_id",insertable=false,updatable=false)
-	private Associate asc;
+	@Column @NotBlank
+	private String name;
 	
-	@OneToOne @JsonIgnore
-	@JoinColumn(name="eventId",insertable=false,updatable=false)
-	private EventInfo event;
-	
-	private Integer volHours;
-	
-	private Integer travlHours;
-	
-	private Integer livesImpactedCount;	
-	
-
 	@Column @CreationTimestamp
 	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(pattern = "dd-MM-yyyy")
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private Date createdDate;
+	
+	private Long createdBy;
+	
+	@OneToOne @JsonIgnore 
+	@JoinColumn(name="areaId",insertable=true,updatable=true)
+	private ResidenceArea area;
+	
+	@Transient
+	private boolean isPersist;
+	@Transient
+	private boolean isUpdate;
 }
