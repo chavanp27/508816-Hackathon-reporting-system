@@ -36,6 +36,7 @@ import com.cts.ora.report.constants.ORADataLoadConstants;
 import com.cts.ora.report.dataload.dao.ORADataLoadDao;
 import com.cts.ora.report.dataload.vo.ORADataLoadRequest;
 import com.cts.ora.report.domain.model.Associate;
+import com.cts.ora.report.domain.model.AssociateEventMap;
 import com.cts.ora.report.domain.model.BusinessUnit;
 import com.cts.ora.report.domain.model.City;
 import com.cts.ora.report.domain.model.Country;
@@ -213,11 +214,11 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 	private Integer loadEventDetailData(ORAFile eventDetailFile) {
 		logger.info("Into loadEventDetailData");
 		Integer statusCode = -1;
-		List<EventInfo> eventInfoList=null;
+		List<AssociateEventMap> ascEventInfo=null;
 		try{
 			if(eventDetailFile!=null && eventDetailFile.getFileLoc()!=null && !"".equals(eventDetailFile.getFileLoc())){
-				eventInfoList = parseEventDetailFile(eventDetailFile.getFileLoc());
-				//oraDataLoadDao.saveEventInfo(eventInfoList);
+				ascEventInfo = parseEventDetailFile(eventDetailFile.getFileLoc());
+				oraDataLoadDao.saveAssociateEventInfo(ascEventInfo);
 				statusCode = 1;
 			}
 		}catch(ORAException e){
@@ -712,18 +713,19 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		return eventInfoList;
 	}
 	
-	private List<EventInfo> parseEventDetailFile(String filePath){
+	private List<AssociateEventMap> parseEventDetailFile(String filePath){
 		logger.info("Into parseEventDetailFile");
 		List<EventInfo> eventInfoList=new ArrayList<>();
 		EventInfo evntInfo=null;
 		Set<Long> associateLst=new HashSet();
-		List<Project> projLst = null;
-		List<EventCategory> eventCatLst = null;
 		List<Associate> ascLst = null;
+		Associate asc = null;
+		
+		List<AssociateEventMap> ascEventLst = new ArrayList<>();
+		Set<String> eventtIds = new HashSet<>();
+		AssociateEventMap ascEventInfo = null;
 		
 		XSSFWorkbook  wb=null;
-		
-		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yy");
 		
 		try {
 			wb = new XSSFWorkbook(filePath);
@@ -731,105 +733,67 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			int rows = sheet.getPhysicalNumberOfRows();
 			logger.info("Event Detail Sheet has " + rows+ " row(s).");
 			
-			List<Project> allProjLst = oraDataLoadDao.getAllProjects();
-			logger.info("allProjLst:"+JSONConverter.toString(allProjLst));
-			eventCatLst = oraDataLoadDao.getAllEventCategories();
-			logger.info("eventCatLst:"+JSONConverter.toString(eventCatLst));
-			
 			for (int r = 1; r < rows; r++) {
 				XSSFRow row = sheet.getRow(r);
 				if (row != null) {
 					
-					String isApproved = isValidCell(row.getCell(17))?row.getCell(17).getRichStringCellValue().getString():null;
+					String isApproved = isValidCell(row.getCell(13))?row.getCell(13).getRichStringCellValue().getString():null;
 					if(!isApproved.equalsIgnoreCase("Approved")){
 						continue;
 					}
+					
 					String eventId = getCellValue(row.getCell(0));
 					logger.info("eventId:"+eventId);
-					String baseLoc = getCellValue(row.getCell(2));
-					String beneficiaryName = getCellValue(row.getCell(3));
-					String eventAddr = getCellValue(row.getCell(4));
-					String projectName = getCellValue(row.getCell(6));
-					String catName = getCellValue(row.getCell(7));
+					eventtIds.add(eventId);
+					String empId = getCellValue(row.getCell(7));
+					associateLst.add(Long.parseLong(empId));
 					
-					String eventName = getCellValue(row.getCell(8));
-					//String desc = getCellValue(row.getCell(9));
-					String eventDate = getCellValue(row.getCell(10)); //sdf.format(row.getCell(10).getDateCellValue());
-					logger.info("eventDate:"+eventDate);
-					boolean isWeekend = ORAUtil.isWeekend(sdf.parse(eventDate));
+					String volHours = getCellValue(row.getCell(9));
+					String travelHours = getCellValue(row.getCell(10));
+					String livesImpactCount = getCellValue(row.getCell(11));
 					
-					
-					
-					String totVolCount = getCellValue(row.getCell(11));
-					String totVolHours = getCellValue(row.getCell(12));
-					String totTravelHours = getCellValue(row.getCell(13));
-					String totEventHours = getCellValue(row.getCell(14));
-					String totLivesImpact = getCellValue(row.getCell(15));
-					
-					String pocs = getCellValue(row.getCell(18));
-					List<String> empIdLst = Arrays.asList(pocs.split(";"));
-					
-					associateLst.addAll(empIdLst.stream().map(id->Long.parseLong(id)).collect(Collectors.toSet()));
-					
-					logger.info("eventId:"+eventId);
-					logger.info("isWeekend:"+isWeekend);
-					logger.info("empIdLst:"+empIdLst);
-					
-					Location loc = oraDataLoadDao.getLocationBasedOnPinCode(eventAddr.substring(eventAddr.lastIndexOf("-")+1));
-					logger.info("loc:"+loc);
-					
-					Project proj = allProjLst.stream().filter(p->p.getTitle().equals(projectName)).findFirst().get();
-					EventCategory cat = eventCatLst.stream().filter(c->c.getTitle().equals(catName)).findFirst().get();
-					
+					ascEventInfo = new AssociateEventMap();
 					evntInfo = new EventInfo();
 					evntInfo.setEventId(eventId);
-					evntInfo.setEventName(eventName);
-					evntInfo.setProject(proj);
-					evntInfo.setCategory(cat);
-					evntInfo.setBeneficiaryName(beneficiaryName);
-					//evntInfo.setDescription(desc);
-					evntInfo.setOnWeekend(isWeekend);
-					evntInfo.setEventDate(sdf.parse(eventDate));
-					evntInfo.setBaseLoc(baseLoc);
-					evntInfo.setLocation(loc);
-					//evntInfo.setCreatedBy(createdBy);
-					evntInfo.setEventAddress(eventAddr);
-					evntInfo.setTotalVolunteersCount(Integer.parseInt(totVolCount));
-					evntInfo.setTotalVolunteerHrs(Float.parseFloat(totVolHours));
-					evntInfo.setTotalTravelHrs(Float.parseFloat(totTravelHours));
-					evntInfo.setTotalEventHrs(Float.parseFloat(totEventHours));
-					evntInfo.setLivesImpacted(Integer.parseInt(totLivesImpact));
-					evntInfo.setPoc(empIdLst.stream().map(a-> {Associate asc = new Associate();
-											asc.setId(Long.parseLong(a)); return asc;})
-											.collect(Collectors.toSet()));
-					logger.info("evntInfo.getPoc::"+evntInfo.getPoc());
-					//calc Period from eventDate
-					evntInfo.setPeriod(ORAUtil.getPeriod(sdf.parse(eventDate)));
-					eventInfoList.add(evntInfo);
+					ascEventInfo.setEvent(evntInfo);
+					
+					asc = new Associate();
+					asc.setId(Long.parseLong(empId));
+					ascEventInfo.setAsc(asc);
+					
+					ascEventInfo.setVolHours(Float.parseFloat(volHours));
+					ascEventInfo.setTravelHours(Float.parseFloat(travelHours));
+					ascEventInfo.setLivesImpactedCount(Integer.parseInt(livesImpactCount));
+					ascEventLst.add(ascEventInfo);
 				}
 			}
+			logger.info("eventtIds::"+eventtIds);
+			
+			eventInfoList = oraDataLoadDao.getEventById(eventtIds.stream().collect(Collectors.toList()));
+			logger.info("eventInfoList::"+eventInfoList);
+			
 			ascLst = oraDataLoadDao.getAssociateById(associateLst.stream().collect(Collectors.toList()));
-			//logger.info("ascLst::"+ascLst);
+			logger.info("ascLst::"+ascLst);
 			
-			for(EventInfo e:eventInfoList){
-				Set<Associate> updatedAsc = new HashSet<>();
-				for(Associate a:e.getPoc()){
-					if(ascLst!=null && ascLst.indexOf(a)>-1){
-						a = ascLst.get(ascLst.indexOf(a));
-						a.setIsPOC(Boolean.TRUE);
-						a.setIsVolunteer(Boolean.TRUE);
-						updatedAsc.add(a);
-					}else{
-						a=null;
-					}
+			for (AssociateEventMap aEvnt : ascEventLst) {
+
+				if (eventInfoList != null && eventInfoList.indexOf(aEvnt.getEvent()) > -1) {
+					aEvnt.setEvent(eventInfoList.get(eventInfoList.indexOf(aEvnt.getEvent())));
+				}else{
+					logger.info("eventInfoList NotFound::");
 				}
-				e.setPoc(updatedAsc);
+				
+				if (ascLst != null && ascLst.indexOf(aEvnt.getAsc()) > -1) {
+					aEvnt.setAsc(ascLst.get(ascLst.indexOf(aEvnt.getAsc())));
+				}else{
+					logger.info("ascLst NotFound::");
+				}
 			}
 			
-			logger.info("eventInfoList::"+JSONConverter.toString(eventInfoList));
+			logger.info("ascEventLst***2::"+JSONConverter.toString(ascEventLst));
 			}catch(Exception e){
 				e.printStackTrace();
-				logger.error("Error in parseEventSummaryInputFile:"+e);
+				logger.error("Error in parseEventDetailFile:"+e);
 				throw new ORAException();
 			}finally {
 				if(wb!=null){
@@ -840,8 +804,8 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					}
 				}
 			}
-		logger.info("Out of parseEventSummaryInputFile");
-		return eventInfoList;
+		logger.info("Out of parseEventDetailFile");
+		return ascEventLst;
 	}
 	
 	private boolean isAssociateExists(List<Associate> existingAssociates,Integer empId){

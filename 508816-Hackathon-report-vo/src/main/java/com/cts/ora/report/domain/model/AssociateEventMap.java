@@ -38,17 +38,17 @@ public class AssociateEventMap {
 	@GenericGenerator(name = "native", strategy = "native")
 	private Long mapId;
 	
-	@OneToOne @JsonIgnore 
+	@OneToOne 
 	@JoinColumn(name="asc_id",insertable=false,updatable=false)
 	private Associate asc;
 	
-	@OneToOne @JsonIgnore
+	@OneToOne
 	@JoinColumn(name="eventId",insertable=false,updatable=false)
 	private EventInfo event;
 	
-	private Integer volHours;
+	private Float volHours;
 	
-	private Integer travlHours;
+	private Float travelHours;
 	
 	private Integer livesImpactedCount;	
 	

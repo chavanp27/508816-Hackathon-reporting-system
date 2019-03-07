@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 
 import com.cts.ora.report.dataload.repository.AssociateRepository;
 import com.cts.ora.report.domain.model.Associate;
+import com.cts.ora.report.domain.model.AssociateEventMap;
 import com.cts.ora.report.domain.model.BusinessUnit;
 import com.cts.ora.report.domain.model.City;
 import com.cts.ora.report.domain.model.Country;
@@ -518,6 +519,62 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		
 		logger.info("Out of saveEventInfo");
 		
+	}
+
+
+
+	@Override
+	public List<EventInfo> getEventById(List<String> eventIds) {
+		logger.info("Into getEventById::");
+		List<EventInfo> eventInfoLst=null;
+		try {
+			em = emf.createEntityManager();
+			String sql = "SELECT e FROM EventInfo e WHERE e.eventId IN (:eventIds)";
+			eventInfoLst =   em.createQuery(sql,EventInfo.class)
+							   .setParameter("eventIds", eventIds).getResultList();
+			
+		} catch (Exception e) {
+			logger.error("Error in getEventById:"+e.getMessage());
+			return null;
+		}finally {
+			if(em!=null){
+				em.close();
+			}
+		}
+		logger.info("Out of getEventById");
+		return eventInfoLst;
+	}
+
+
+
+	@Override
+	public void saveAssociateEventInfo(List<AssociateEventMap> ascEventInfo) {
+		logger.info("Into saveAssociateEventInfo::");
+		try {
+			em = emf.createEntityManager();
+			em.getTransaction().begin();
+			
+			ascEventInfo.stream().forEach(e->{
+				em.merge(e.getAsc());
+				em.merge(e.getEvent());
+				em.persist(e);
+			});
+
+		    em.getTransaction().commit();
+		}catch(Exception e) {
+			logger.error("Error during saveAssociateEventInfo:"+e.getMessage());
+			try {
+				em.getTransaction().rollback();
+				throw new ORAException("EVENT_DETAIL_LOAD_FAILURE", "Project/Category not saved", e);
+			} catch (Exception e1) {
+				logger.error("Error during rollback");
+			}finally {
+				if(em!=null){
+					em.close();
+				}
+			}
+		}
+		logger.info("Out of saveAssociateEventInfo");
 	}
 	
 	

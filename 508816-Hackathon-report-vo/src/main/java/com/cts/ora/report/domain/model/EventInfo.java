@@ -9,8 +9,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -21,7 +23,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Entity(name="ora_outreach_event_info")
+@Entity()
+@Table(
+		name="ora_outreach_event_info", 
+        uniqueConstraints=
+            @UniqueConstraint(columnNames={"eventId"})
+    )
 @Getter @Setter @ToString(exclude= {"poc","volunteers"})
 public class EventInfo {
 	
