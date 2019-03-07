@@ -1,7 +1,5 @@
 package com.cts.ora.report.dataload.controller;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +19,8 @@ import com.cts.ora.report.common.util.ORAMessageUtil;
 import com.cts.ora.report.common.vo.ORAResponse;
 import com.cts.ora.report.dataload.service.ORADataLoadService;
 import com.cts.ora.report.dataload.vo.ORADataLoadRequest;
-import com.cts.ora.report.domain.model.Associate;
-import com.cts.ora.report.domain.model.BusinessUnit;
 import com.cts.ora.report.file.vo.FileUploadResponse;
+import com.cts.ora.report.filter.FilterResponse;
 
 @RestController
 @RequestMapping("/api")
@@ -36,18 +33,34 @@ public class ORADataLoadController {
 	
 	@GetMapping("/associates/get")
 	@ResponseBody
-	public List<Associate> getAssociates(){
+	public FilterResponse getAssociates(){
 		logger.info("In getAssociates");
-		return service.getAssociates();
-		
+		FilterResponse resp=new FilterResponse();
+		try {
+			resp.setAssociates(service.getAssociates());
+			ORAMessageUtil.setSuccessMessage(resp);
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			ORAMessageUtil.setFailureMessage(resp);
+		}
+		return resp;
 	}
 	
 	@GetMapping("/bu/get")
 	@ResponseBody
-	public List<BusinessUnit> getBusinessUnits(){
+	public FilterResponse getBusinessUnits(){
 		logger.info("In getBusinessUnits");
-		return service.getBusinessUnits();
-		
+		FilterResponse resp=new FilterResponse();
+		try {
+			resp.setBusUnits(service.getBusinessUnits());
+			ORAMessageUtil.setSuccessMessage(resp);
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			ORAMessageUtil.setFailureMessage(resp);
+		}
+		return resp;
 	}
 	
 	@PostMapping("/data/load")
