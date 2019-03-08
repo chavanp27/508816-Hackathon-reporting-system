@@ -12,10 +12,10 @@ import com.cts.ora.report.domain.model.Location;
 @Repository
 public interface LocationRepository extends JpaRepository<Location, Integer> {
 
-	@Query(value="Select loc_id from ora_ref_location where cntryId in :countryId and stateId in :stateId and cityId in :cityId and resAreaId in :resAreaId and codeId in :pinCodes",nativeQuery=true)
+	@Query(value="Select loc_id from ora_ref_location where cntry_id in :countryId and state_id in :stateId and city_id in :cityId and res_area_id in :resAreaId and code_id in :pinCodes",nativeQuery=true)
 	public List<Integer> getLocationId(List<Integer> countryId,List<Integer> stateId,List<Integer> cityId,List<Integer> resAreaId,List<Integer> pinCodes);
 	
-	@Query(value="Select loc_id from ora_ref_location where cntryId in :countryId",nativeQuery=true)
+	@Query(value="Select loc_id from ora_ref_location where cntry_id in :countryId",nativeQuery=true)
 	public List<Integer> getLocationIdsForCountry(List<Integer> countryId);
 	
 	@Query(value="Select loc_id from ora_ref_location where state_id in :stateId",nativeQuery=true)
@@ -24,9 +24,9 @@ public interface LocationRepository extends JpaRepository<Location, Integer> {
 	@Query(value="Select loc_id from ora_ref_location where city_id in :cityId",nativeQuery=true)
 	public List<Integer> getLocationIdsForCity(List<Integer> cityId);
 	
-	@Query(value="Select loc_id from ora_ref_location where resAreaId in :resAreaId",nativeQuery=true)
+	@Query(value="Select loc_id from ora_ref_location where res_area_id in :resAreaId",nativeQuery=true)
 	public List<Integer> getLocationIdsForArea(List<Integer> resAreaId);
 	
-	@Query(value="SELECT loc_id from ora_ref_location where codeId in :pinCodes")
+	@Query(value="SELECT loc_id from ora_ref_location where code_id in :pinCodes")
 	public List<Integer> getLocationsForPin(List<Integer> pinCodes);
 }
