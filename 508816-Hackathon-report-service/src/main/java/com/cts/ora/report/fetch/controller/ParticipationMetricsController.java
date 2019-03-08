@@ -12,7 +12,7 @@ import com.cts.ora.report.fetch.vo.FetchRequest;
 import com.cts.ora.report.fetch.vo.FetchResponse;
 
 @RestController
-@RequestMapping(path="/participation-metrics")
+@RequestMapping(path="/api/v1/participation-metrics")
 public class ParticipationMetricsController {
 
 	@Autowired

@@ -12,7 +12,7 @@ import com.cts.ora.report.fetch.vo.FetchRequest;
 import com.cts.ora.report.fetch.vo.FetchResponse;
 
 @RestController
-@RequestMapping(path="/engagement-metrics")
+@RequestMapping(path="/api/v1/engagement-metrics")
 public class EngagementMetricsController {
 
 	@Autowired
