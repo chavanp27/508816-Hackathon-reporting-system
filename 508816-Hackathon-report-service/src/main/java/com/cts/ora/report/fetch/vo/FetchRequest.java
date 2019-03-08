@@ -12,6 +12,8 @@ public @Data class FetchRequest extends ORARequest {
 	
 	private Integer endPeriod;
 	
+	private String periodType;
+	
 	private Geography geography;
 
 	private List<String> bu;
