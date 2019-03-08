@@ -9,6 +9,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import org.hibernate.annotations.Type;
+
 import lombok.Data;
 @Entity(name="ora_bu_metrics")
 @Data
@@ -42,5 +44,6 @@ public class BuMetrics {
 	private Integer totalEvents;
 	
 	@Column(name="is_weekend")
+	@Type(type= "org.hibernate.type.NumericBooleanType")
 	private Boolean isWeekend;
 }

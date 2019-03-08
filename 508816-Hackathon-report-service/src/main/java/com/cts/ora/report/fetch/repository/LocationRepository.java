@@ -27,6 +27,6 @@ public interface LocationRepository extends JpaRepository<Location, Integer> {
 	@Query(value="Select loc_id from ora_ref_location where res_area_id in :resAreaId",nativeQuery=true)
 	public List<Integer> getLocationIdsForArea(List<Integer> resAreaId);
 	
-	@Query(value="SELECT loc_id from ora_ref_location where code_id in :pinCodes")
+	@Query(value="SELECT loc_id from ora_ref_location where code_id in :pinCodes",nativeQuery=true)
 	public List<Integer> getLocationsForPin(List<Integer> pinCodes);
 }

@@ -9,6 +9,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import org.hibernate.annotations.Type;
+
 import lombok.Data;
 
 
@@ -44,6 +46,7 @@ public class GeoMetrics {
 	private Integer totalEvents;
 	
 	@Column(name="is_weekend")
+	@Type(type= "org.hibernate.type.NumericBooleanType")
 	private Boolean isWeekend;
 
 		
