@@ -747,6 +747,9 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					String empId = getCellValue(row.getCell(7));
 					associateLst.add(Long.parseLong(empId));
 					
+					String eventDate = getCellValue(row.getCell(6));
+					logger.info("eventDate:"+eventDate);
+					
 					String volHours = getCellValue(row.getCell(9));
 					String travelHours = getCellValue(row.getCell(10));
 					String livesImpactCount = getCellValue(row.getCell(11));
@@ -775,7 +778,6 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			logger.info("ascLst::"+ascLst);
 			
 			for (AssociateEventMap aEvnt : ascEventLst) {
-
 				if (eventInfoList != null && eventInfoList.indexOf(aEvnt.getEvent()) > -1) {
 					aEvnt.setEvent(eventInfoList.get(eventInfoList.indexOf(aEvnt.getEvent())));
 				}else{
@@ -783,7 +785,13 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 				}
 				
 				if (ascLst != null && ascLst.indexOf(aEvnt.getAsc()) > -1) {
-					aEvnt.setAsc(ascLst.get(ascLst.indexOf(aEvnt.getAsc())));
+					Associate a=ascLst.get(ascLst.indexOf(aEvnt.getAsc()));
+					if(a.getFirstVolunteerDate()!=null){
+						//getEarlierDate(a.getFirstVolunteerDate(),aEvnt.getEvent().getEventDate());
+					}else{
+						a.setFirstVolunteerDate(aEvnt.getEvent().getEventDate());
+					}
+					aEvnt.setAsc(a);
 				}else{
 					logger.info("ascLst NotFound::");
 				}
