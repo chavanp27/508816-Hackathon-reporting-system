@@ -5,13 +5,11 @@ import java.util.List;
 import com.cts.ora.report.common.vo.ORAResponse;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Data
+@Data @NoArgsConstructor
 public class FetchResponse extends ORAResponse {
 
-	public FetchResponse(String status, String responseText, String responseCode) {
-		super(status, responseText, responseCode);
-	}
 	
 	private List<ParticipationMetrics> participationMetrics;
 	

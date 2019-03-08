@@ -11,11 +11,18 @@ import com.cts.ora.report.fetch.vo.FetchResponse;
 public class RequestValidator {
 
 	public FetchResponse validateFetchRequest(FetchRequest request) {
-		if(null!= request && null!=request.getStartPeriod() && null!=request.getEndPeriod() && (null!=request.getGeography() || null!= request.getBu())) {
-			return new FetchResponse("SUCCESS","0000","Request processed successfully");
-		}
+		FetchResponse res=new FetchResponse();
 		
-		return new FetchResponse("FAILURE","1111","Incorrect request parameters");
+		if(null!= request && null!=request.getStartPeriod() && null!=request.getEndPeriod() && (null!=request.getGeography() || null!= request.getBu())) {
+			res.setStatus("SUCCESS");
+			res.setResponseText("Request processed successfully");
+			res.setResponseCode("0000");
+			return res;
+		}
+		res.setStatus("FAILURE");
+		res.setResponseText("Incorrect request parameters");
+		res.setResponseCode("1111");
+		return res;
 		
 	}
 }

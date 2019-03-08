@@ -16,4 +16,6 @@ public class ORAResponse implements Serializable{
 	private String status;
 	private String responseText;
 	private String responseCode;
+	
+	
 }
