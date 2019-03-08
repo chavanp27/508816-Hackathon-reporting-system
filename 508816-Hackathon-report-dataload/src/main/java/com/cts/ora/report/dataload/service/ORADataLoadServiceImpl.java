@@ -601,9 +601,9 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			logger.info("Event Summary Sheet has " + rows+ " row(s).");
 			
 			List<Project> allProjLst = oraDataLoadDao.getAllProjects();
-			logger.info("allProjLst:"+JSONConverter.toString(allProjLst));
+			//logger.info("allProjLst:"+JSONConverter.toString(allProjLst));
 			eventCatLst = oraDataLoadDao.getAllEventCategories();
-			logger.info("eventCatLst:"+JSONConverter.toString(eventCatLst));
+			//logger.info("eventCatLst:"+JSONConverter.toString(eventCatLst));
 			
 			for (int r = 1; r < rows; r++) {
 				XSSFRow row = sheet.getRow(r);
@@ -614,7 +614,6 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 						continue;
 					}
 					String eventId = getCellValue(row.getCell(0));
-					logger.info("eventId:"+eventId);
 					String baseLoc = getCellValue(row.getCell(2));
 					String beneficiaryName = getCellValue(row.getCell(3));
 					String eventAddr = getCellValue(row.getCell(4));
@@ -626,8 +625,6 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					String eventDate = getCellValue(row.getCell(10)); //sdf.format(row.getCell(10).getDateCellValue());
 					logger.info("eventDate:"+eventDate);
 					boolean isWeekend = ORAUtil.isWeekend(sdf.parse(eventDate));
-					
-					
 					
 					String totVolCount = getCellValue(row.getCell(11));
 					String totVolHours = getCellValue(row.getCell(12));
@@ -661,7 +658,6 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					evntInfo.setEventDate(sdf.parse(eventDate));
 					evntInfo.setBaseLoc(baseLoc);
 					evntInfo.setLocation(loc);
-					//evntInfo.setCreatedBy(createdBy);
 					evntInfo.setEventAddress(eventAddr);
 					evntInfo.setTotalVolunteersCount(Integer.parseInt(totVolCount));
 					evntInfo.setTotalVolunteerHrs(Float.parseFloat(totVolHours));
@@ -671,14 +667,14 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					evntInfo.setPoc(empIdLst.stream().map(a-> {Associate asc = new Associate();
 											asc.setId(Long.parseLong(a)); return asc;})
 											.collect(Collectors.toSet()));
-					logger.info("evntInfo.getPoc::"+evntInfo.getPoc());
+					
 					//calc Period from eventDate
 					evntInfo.setPeriod(ORAUtil.getPeriod(sdf.parse(eventDate)));
 					eventInfoList.add(evntInfo);
 				}
 			}
 			ascLst = oraDataLoadDao.getAssociateById(associateLst.stream().collect(Collectors.toList()));
-			//logger.info("ascLst::"+ascLst);
+			logger.info("ascLst::"+ascLst);
 			
 			for(EventInfo e:eventInfoList){
 				Set<Associate> updatedAsc = new HashSet<>();
@@ -687,6 +683,9 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 						a = ascLst.get(ascLst.indexOf(a));
 						a.setIsPOC(Boolean.TRUE);
 						a.setIsVolunteer(Boolean.TRUE);
+						if(a.getFirstVolunteerDate()==null) {
+							a.setFirstVolunteerDate(e.getEventDate());
+						}
 						updatedAsc.add(a);
 					}else{
 						a=null;
