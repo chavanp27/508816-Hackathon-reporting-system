@@ -37,6 +37,7 @@ import lombok.ToString;
 				@FieldResult(name = "isPOC", column = "is_poc"),
 				@FieldResult(name = "createdDate", column = "created_date"),
 				@FieldResult(name = "designation", column = "designation"),
+				@FieldResult(name = "firstVolunteerDate", column = "first_volunteer_date"),
 				@FieldResult(name = "bu", column = "asc_bId") }) })
 public class Associate {
 	
@@ -64,8 +65,12 @@ public class Associate {
 	
 	@Column @CreationTimestamp
 	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@DateTimeFormat(pattern = "dd-MM-yyyy")
 	private Date createdDate;
+	
+	@DateTimeFormat(pattern = "dd-MM-yyyy")
+	@Temporal(TemporalType.DATE)
+	private Date firstVolunteerDate;
 	
 	@Transient @JsonIgnore
 	private boolean isBuExists;
