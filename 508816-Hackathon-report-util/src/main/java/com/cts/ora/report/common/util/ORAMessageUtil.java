@@ -13,7 +13,7 @@ public class ORAMessageUtil {
 	public static void setFailureMessage(ORAResponse response){
 		response.setResponseCode("0001");
 		response.setStatus("FAILURE");
-		response.setResponseText("Failed to process request: Contact Support");
+		response.setResponseText("Failed to process request: Please Contact Support");
 	}
 	
 	public static void setMessage(ORAResponse response, String responseText, 

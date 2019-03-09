@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ public class FileServiceImpl implements FileService {
 		String fileName = null;
 		
         try {
-        	Path fileStorageLocation = Paths.get(UPLOAD_COMMON_PATH);
+        	Path fileStorageLocation = Paths.get(UPLOAD_COMMON_PATH+UUID.randomUUID().toString());
     		
             // Normalize file name
         	fileName = StringUtils.cleanPath(file.getOriginalFilename());
@@ -44,9 +45,15 @@ public class FileServiceImpl implements FileService {
 
             // Copy file to the target location (Replacing existing file with the same name)
             Path targetLocation = fileStorageLocation.resolve(fileName);
+            Files.createDirectory(fileStorageLocation);
+            
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            logger.info("Location::"+targetLocation.toAbsolutePath().toString());
+            
             resp.setLoc(targetLocation.toAbsolutePath().toString());
+            ORAMessageUtil.setSuccessMessage(resp);
         } catch (IOException ex) {
+        	ex.printStackTrace();
         	ORAMessageUtil.setMessage(resp, "Could not store file " + fileName + ". Please try again!", "FAILURE", "0001");
         }
         logger.info("Out of saveFile");
