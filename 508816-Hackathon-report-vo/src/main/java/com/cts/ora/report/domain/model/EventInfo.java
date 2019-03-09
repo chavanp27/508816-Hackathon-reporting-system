@@ -19,6 +19,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -29,7 +32,7 @@ import lombok.ToString;
         uniqueConstraints=
             @UniqueConstraint(columnNames={"eventId"})
     )
-@Getter @Setter @ToString(exclude= {"poc","volunteers"})
+@Getter @Setter @ToString(exclude= {"poc","volunteers"}) @EqualsAndHashCode(of={"eventId"})
 public class EventInfo {
 	
 	@Id
@@ -64,7 +67,7 @@ public class EventInfo {
 	@JoinColumn(name="locId",insertable=true,updatable=true)
 	private Location location;
 	
-	@OneToMany(mappedBy="id")
+	@OneToMany(mappedBy="id") @JsonIgnore
 	private Set<Associate> poc;
 	
 	@OneToMany(mappedBy="id") 

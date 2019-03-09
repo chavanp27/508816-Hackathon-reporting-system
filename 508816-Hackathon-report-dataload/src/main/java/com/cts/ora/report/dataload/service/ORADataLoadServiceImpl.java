@@ -7,6 +7,8 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -75,12 +77,21 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 													,request.getEventDetailFile()).collect(Collectors.toList());
 			createIncomingFileEntry(uploadFiles);
 			
-			//Load Associate Data
-			updateIncomingFileStatus(request.getAscFile().getFileId(), loadAssociateData(request.getAscFile()));
-			//Event Summary File
-			updateIncomingFileStatus(request.getEventSummaryFile().getFileId(), loadEventSummaryData(request.getEventSummaryFile()));
-			//Event Detail File
-			updateIncomingFileStatus(request.getEventDetailFile().getFileId(), loadEventDetailData(request.getEventDetailFile()));
+			if(request.getAscFile()!=null){
+				//Load Associate Data
+				updateIncomingFileStatus(request.getAscFile().getFileId(), loadAssociateData(request.getAscFile()));
+				
+			}
+			if(request.getEventSummaryFile()!=null){
+				//Event Summary File
+				updateIncomingFileStatus(request.getEventSummaryFile().getFileId(), loadEventSummaryData(request.getEventSummaryFile()));
+				
+			}
+			if(request.getEventDetailFile()!=null){
+				//Event Detail File
+				updateIncomingFileStatus(request.getEventDetailFile().getFileId(), loadEventDetailData(request.getEventDetailFile()));
+				
+			}
 			
 			ORAMessageUtil.setSuccessMessage(response);
 		}catch(ORAException e){
@@ -88,6 +99,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			ORAMessageUtil.setFailureMessage(response);
 		} 
 		catch (Exception e) {
+			e.printStackTrace();
 			ORAMessageUtil.setFailureMessage(response);
 		}
 		logger.info("out of loadIncomingFiles");
@@ -113,7 +125,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		logger.info("incomingFiles saved:"+incomingFiles);
 		
 		incomingFiles.stream().forEach(i->{
-			uploadFiles.stream().filter(f->f.getFileName().equals(i.getFileName()))
+			uploadFiles.stream().filter(f->f!=null && i.getFileName().equals(f.getFileName()))
 								.findFirst().get().setFileId(i.getInboundId());
 		});
 		logger.info("out of updateIncomingTable");
@@ -777,23 +789,26 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			ascLst = oraDataLoadDao.getAssociateById(associateLst.stream().collect(Collectors.toList()));
 			logger.info("ascLst::"+ascLst);
 			
+			
 			for (AssociateEventMap aEvnt : ascEventLst) {
 				if (eventInfoList != null && eventInfoList.indexOf(aEvnt.getEvent()) > -1) {
 					aEvnt.setEvent(eventInfoList.get(eventInfoList.indexOf(aEvnt.getEvent())));
+					aEvnt.setPersist(Boolean.TRUE);
 				}else{
-					logger.info("eventInfoList NotFound::");
+					logger.info("EventId NotFound::"+aEvnt.getEvent());
 				}
 				
-				if (ascLst != null && ascLst.indexOf(aEvnt.getAsc()) > -1) {
+				if (ascLst != null && ascLst.indexOf(aEvnt.getAsc()) > -1 && aEvnt.isPersist()) {
 					Associate a=ascLst.get(ascLst.indexOf(aEvnt.getAsc()));
 					if(a.getFirstVolunteerDate()!=null){
-						//getEarlierDate(a.getFirstVolunteerDate(),aEvnt.getEvent().getEventDate());
+						a.setFirstVolunteerDate(getEarlierDate(a.getFirstVolunteerDate(), aEvnt.getEvent().getEventDate()));
 					}else{
 						a.setFirstVolunteerDate(aEvnt.getEvent().getEventDate());
 					}
 					aEvnt.setAsc(a);
 				}else{
-					logger.info("ascLst NotFound::");
+					aEvnt.setPersist(Boolean.FALSE);
+					logger.info("Associate NotFound::"+aEvnt.getAsc().getId());
 				}
 			}
 			
@@ -813,6 +828,10 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 			}
 		logger.info("Out of parseEventDetailFile");
 		return ascEventLst;
+	}
+	
+	private Date getEarlierDate(Date d1, Date d2){
+		return Collections.min(Stream.of(d1,d2).collect(Collectors.toList()));
 	}
 	
 	private boolean isAssociateExists(List<Associate> existingAssociates,Integer empId){

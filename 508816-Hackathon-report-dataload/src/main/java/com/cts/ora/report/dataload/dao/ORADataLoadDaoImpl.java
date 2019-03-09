@@ -545,8 +545,6 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		return eventInfoLst;
 	}
 
-
-
 	@Override
 	public void saveAssociateEventInfo(List<AssociateEventMap> ascEventInfo) {
 		logger.info("Into saveAssociateEventInfo::");
@@ -555,9 +553,11 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 			em.getTransaction().begin();
 			
 			ascEventInfo.stream().forEach(e->{
-				em.merge(e.getAsc());
-				em.merge(e.getEvent());
-				em.persist(e);
+				if(e.isPersist()){
+					em.merge(e.getAsc());
+					em.merge(e.getEvent());
+					em.persist(e);
+				}
 			});
 
 		    em.getTransaction().commit();

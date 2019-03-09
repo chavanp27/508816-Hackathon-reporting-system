@@ -12,6 +12,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -39,11 +40,11 @@ public class AssociateEventMap {
 	private Long mapId;
 	
 	@OneToOne 
-	@JoinColumn(name="asc_id",insertable=false,updatable=false)
+	@JoinColumn(name="asc_id",insertable=true,updatable=true)
 	private Associate asc;
 	
-	@OneToOne
-	@JoinColumn(name="eventId",insertable=false,updatable=false)
+	@OneToOne @JsonIgnore
+	@JoinColumn(name="eventId",insertable=true,updatable=true)
 	private EventInfo event;
 	
 	private Float volHours;
@@ -52,9 +53,11 @@ public class AssociateEventMap {
 	
 	private Integer livesImpactedCount;	
 	
-
 	@Column @CreationTimestamp
 	@Temporal(TemporalType.DATE)
 	@DateTimeFormat(pattern = "dd-MM-yyyy")
 	private Date createdDate;
+	
+	@Transient
+	private boolean isPersist;
 }
