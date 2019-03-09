@@ -1,4 +1,4 @@
-package com.cts.ora.report.Hackathonreportservice;
+package com.cts.ora.report.test;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
