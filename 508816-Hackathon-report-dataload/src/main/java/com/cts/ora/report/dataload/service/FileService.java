@@ -9,6 +9,6 @@ public interface FileService {
 	
 	ORAFileResponse saveFile(MultipartFile file);
 	
-	Resource loadFileAsResource(String fileId);
+	Resource downloadFile(String fileId, String boundType);
 
 }

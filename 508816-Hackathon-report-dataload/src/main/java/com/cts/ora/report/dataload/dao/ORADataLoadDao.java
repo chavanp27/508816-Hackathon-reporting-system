@@ -47,5 +47,7 @@ public interface ORADataLoadDao {
 	void saveEventInfo(List<EventInfo> eventInfoList);
 	
 	void saveAssociateEventInfo(List<AssociateEventMap> ascEventInfo);
+	
+	String getFileLocationById(Long fileId, String boundType);
 
 }

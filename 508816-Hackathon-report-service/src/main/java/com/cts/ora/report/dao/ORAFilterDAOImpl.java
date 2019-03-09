@@ -16,7 +16,6 @@ import com.cts.ora.report.domain.model.BusinessUnit;
 import com.cts.ora.report.domain.model.City;
 import com.cts.ora.report.domain.model.Country;
 import com.cts.ora.report.domain.model.EventCategory;
-import com.cts.ora.report.domain.model.IncomingFile;
 import com.cts.ora.report.domain.model.Location;
 import com.cts.ora.report.domain.model.PinCode;
 import com.cts.ora.report.domain.model.Project;
@@ -207,9 +206,23 @@ public class ORAFilterDAOImpl implements ORAFilterDAO {
 	}
 
 	@Override
-	public List<IncomingFile> fetchDataLoadLog() {
-		// TODO Auto-generated method stub
-		return null;
+	public String getInboundFileLocation(Long fileId) {
+		logger.info("Into geAllBusinessUnits");
+		String fileLocation=null;
+		try {
+			em = emf.createEntityManager();
+			fileLocation = em.createQuery("SELECT i.fileLoc FROM IncomingFile i WHERE i.inboundId=:fileId", String.class)
+								.setParameter("fileId", fileId).getSingleResult();
+		} catch (Exception e) {
+			logger.error("Error in getAllBusinessUnits:"+e.getMessage());
+			return null;
+		}finally {
+			if(em!=null){
+				em.close();
+			}
+		}
+		logger.info("Out of geAllBusinessUnits");
+		return fileLocation;
 	}
 
 }

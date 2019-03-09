@@ -9,13 +9,16 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cts.ora.report.common.util.ORAMessageUtil;
+import com.cts.ora.report.dataload.dao.ORADataLoadDao;
 import com.cts.ora.report.dataload.vo.ORAFileResponse;
 
 @Component
@@ -25,6 +28,9 @@ public class FileServiceImpl implements FileService {
 	
 	@Value("${ora.common.file.loc}")
 	private String UPLOAD_COMMON_PATH;
+	
+	@Autowired
+	private ORADataLoadDao dao;
 	
 	@Override
 	public ORAFileResponse saveFile(MultipartFile file) {
@@ -60,26 +66,27 @@ public class FileServiceImpl implements FileService {
         return resp;
     }
 	
+	private String getFileLocation(Long fileId, String boundType){
+			return dao.getFileLocationById(fileId,boundType);
+	}
 	
 	@Override
-	public Resource loadFileAsResource(String fileId) {
-		logger.info("Into loadFileAsResource");
-		 Resource resource = null;
-		 
-       /* try {
-            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
-            resource = new UrlResource(filePath.toUri());
-            if(resource.exists()) {
-                return resource;
-            } else {
-                throw new MyFileNotFoundException("File not found " + fileName);
-            }
-        } catch (MalformedURLException ex) {
-            throw new MyFileNotFoundException("File not found " + fileName, ex);
-        }*/
-        
-		  logger.info("Out of loadFileAsResource");
-        return resource;
-    }
+	public Resource downloadFile(String fileId, String boundType) {
+		logger.info("Into downloadFile");
+		Resource resource = null;
+		logger.info("Download fileId="+fileId +", of type="+boundType);
+		try {
+			Path filePath = Paths.get(getFileLocation(Long.parseLong(fileId), boundType));
+			resource = new UrlResource(filePath.toUri());
+			if (!resource.exists()) {
+				return null;
+			}
+		} catch (Exception ex) {
+			logger.error("Error in downloadFile"+ex.getMessage());
+			return null;
+		}
+		logger.info("Out of downloadFile");
+		return resource;
+	}
 
 }

@@ -61,12 +61,17 @@ public class FileController {
 		return resp;
 	}
 
-	@GetMapping("/download/{fileName:.+}")
-	public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, HttpServletRequest request) {
+	@GetMapping("/download/inbound/{fileId}")
+	public ResponseEntity<Resource> downloadFile(@PathVariable String fileId, HttpServletRequest request) {
 		logger.info("Into downloadFile");
 		// Load file as Resource
-		Resource resource = fileService.loadFileAsResource(fileName);
+		Resource resource = fileService.downloadFile(fileId,"INBOUND");
 
+		if(resource==null){
+			//No file found-404
+			return ResponseEntity.notFound().build();
+		}
+		
 		// Try to determine file's content type
 		String contentType = null;
 		try {
@@ -79,6 +84,7 @@ public class FileController {
 		if (contentType == null) {
 			contentType = "application/octet-stream";
 		}
+		
 		logger.info("Out of downloadFile");
 		return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType))
 				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")

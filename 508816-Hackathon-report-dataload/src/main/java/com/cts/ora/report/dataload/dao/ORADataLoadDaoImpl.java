@@ -574,7 +574,30 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 		logger.info("Out of saveAssociateEventInfo");
 	}
 	
-	
-
+	@Override
+	public String getFileLocationById(Long fileId, String boundType) {
+		logger.info("Into getFileLocationById");
+		String fileLocation=null;
+		String sql=null;
+		try {
+			em = emf.createEntityManager();
+			if("INBOUND".equals(boundType)){
+				sql = "SELECT i.fileLoc FROM IncomingFile i WHERE i.inboundId=:fileId";
+			}else {
+				sql = "SELECT o.fileLoc FROM OutboundFile o WHERE o.outboundId=:fileId";
+			}
+			fileLocation = em.createQuery(sql, String.class)
+								.setParameter("fileId", fileId).getSingleResult();
+		} catch (Exception e) {
+			logger.error("Error in getFileLocationById:"+e.getMessage());
+			return null;
+		}finally {
+			if(em!=null){
+				em.close();
+			}
+		}
+		logger.info("Out of getFileLocationById");
+		return fileLocation;
+	}
 
 }

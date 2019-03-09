@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -21,7 +22,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Entity(name="ORA_SYS_INCOMING_FILES")
+@Entity
+@Table(name="ORA_SYS_INCOMING_FILES")
 @Getter @Setter @ToString @EqualsAndHashCode(of={"inboundId"})
 public class IncomingFile {
 	
