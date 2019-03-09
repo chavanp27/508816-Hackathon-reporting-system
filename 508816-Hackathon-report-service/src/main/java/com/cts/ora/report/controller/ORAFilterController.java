@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cts.ora.report.common.util.ORAMessageUtil;
 import com.cts.ora.report.filter.FilterResponse;
 import com.cts.ora.report.service.ORAFilterService;
+import com.cts.ora.report.vo.ORAFilterRequest;
 
 @RestController
 @RequestMapping("/api/filter")
@@ -21,19 +24,20 @@ public class ORAFilterController {
 	@Autowired
 	ORAFilterService service;
 	
-	@GetMapping("/associates/get")
+	@GetMapping("/users/get")
 	@ResponseBody
-	public FilterResponse getAssociates(){
-		logger.info("In getAssociates");
+	public FilterResponse getORAUsers(){
+		logger.info("In getORAUsers");
 		FilterResponse resp=new FilterResponse();
 		try {
-			resp.setAssociates(service.getAssociates());
+			resp.setUsers(service.getAssociates());
 			ORAMessageUtil.setSuccessMessage(resp);
 			
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			ORAMessageUtil.setFailureMessage(resp);
 		}
+		logger.info("Out of getORAUsers");
 		return resp;
 	}
 	
@@ -50,8 +54,27 @@ public class ORAFilterController {
 			logger.error(e.getMessage());
 			ORAMessageUtil.setFailureMessage(resp);
 		}
+		logger.info("Out of getBusinessUnits");
 		return resp;
 	}
 	
+	@PostMapping("/projects/get")
+	@ResponseBody
+	public FilterResponse getProjects(@RequestBody ORAFilterRequest req){
+		logger.info("In getProjects");
+		FilterResponse resp=new FilterResponse();
+		try {
+			resp.setProjects(service.getAllProjects());
+			logger.info("resp::"+resp.getProjects());
+			ORAMessageUtil.setSuccessMessage(resp);
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			ORAMessageUtil.setFailureMessage(resp);
+		}
+		logger.info("Out of getProjects");
+		return resp;
+	}
+
 
 }

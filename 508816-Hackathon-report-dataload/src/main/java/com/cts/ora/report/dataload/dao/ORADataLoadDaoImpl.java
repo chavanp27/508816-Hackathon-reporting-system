@@ -44,9 +44,6 @@ public class ORADataLoadDaoImpl implements ORADataLoadDao {
 	
 	@Autowired
 	private AssociateRepository ascRepo;
-	
-	//@Autowired private SessionFactory sessionFactory;
-	
 
 	@Override
 	public void saveAssociates(List<Associate> associates) {

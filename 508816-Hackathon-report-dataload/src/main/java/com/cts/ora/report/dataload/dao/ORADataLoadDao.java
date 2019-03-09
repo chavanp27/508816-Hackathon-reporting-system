@@ -44,12 +44,6 @@ public interface ORADataLoadDao {
 	
 	List<EventInfo> getEventById(List<String> eventIds);
 	
-	/*List<Country> getCountryById(Long cntryId);
-	List<State> getStateById(Long stateId);
-	List<City> getCityById(Long cityId);
-	List<ResidenceArea> getAreaById(Long areaId);
-	List<PinCode> getPinCodeById(Long pinCodeId	);*/
-	
 	void saveEventInfo(List<EventInfo> eventInfoList);
 	
 	void saveAssociateEventInfo(List<AssociateEventMap> ascEventInfo);

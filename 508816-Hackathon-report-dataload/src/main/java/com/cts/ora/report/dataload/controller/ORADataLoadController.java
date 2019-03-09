@@ -7,18 +7,14 @@ import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.cts.ora.report.common.util.JSONConverter;
 import com.cts.ora.report.common.util.ORAMessageUtil;
 import com.cts.ora.report.common.vo.ORAResponse;
 import com.cts.ora.report.dataload.service.ORADataLoadService;
 import com.cts.ora.report.dataload.vo.ORADataLoadRequest;
-import com.cts.ora.report.file.vo.FileUploadResponse;
 
 @RestController
 @RequestMapping("/api")
@@ -69,31 +65,5 @@ public class ORADataLoadController {
 		return resp;
 	}
 	
-	@PostMapping("/file/upload")
-	@ResponseBody
-	public ORAResponse uploadFile(@RequestParam("file") MultipartFile file,
-            						RedirectAttributes redirectAttributes){
-		logger.info("Into uploadFile");
-		FileUploadResponse resp=null;
-		try {
-			StopWatch watch = new StopWatch();
-			watch.start();
-			
-			if (file.isEmpty()) {
-	            ORAMessageUtil.setMessage(resp, "Please select a valid file", "0001", "FAILURE");
-	            return resp;
-	        }
-			resp = service.uploadFile(file);
-            
-			watch.stop();
-			logger.info("out of uploadFile");
-			logger.info("UploadFile Time taken(seconds)=="+watch.getTotalTimeSeconds());
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-			ORAMessageUtil.setFailureMessage(resp);
-		}
-		return resp;
-	}
-
 	
 }

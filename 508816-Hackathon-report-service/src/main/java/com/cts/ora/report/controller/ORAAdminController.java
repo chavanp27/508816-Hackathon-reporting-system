@@ -14,7 +14,7 @@ import com.cts.ora.report.common.vo.ORARequest;
 import com.cts.ora.report.common.vo.ORAResponse;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/admin")
 public class ORAAdminController {
 	
 	Logger logger = LoggerFactory.getLogger(ORAAdminController.class);

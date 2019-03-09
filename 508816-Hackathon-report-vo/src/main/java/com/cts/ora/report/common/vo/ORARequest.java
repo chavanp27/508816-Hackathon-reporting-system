@@ -12,5 +12,11 @@ public class ORARequest implements Serializable {
 	private Long ascId;
 	
 	private Long requestTimeStamp;
+	
+	private int periodFrom;
+	
+	private int periodTo;
+	
+	private String periodType;
 
 }

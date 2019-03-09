@@ -897,25 +897,6 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		srv.parseEventSummaryInputFile(masterDataFp);
 	}
 
-
-	@Override
-	public List<Associate> getAssociates() {
-		logger.info("Into getAssociates");
-		return oraDataLoadDao.getAllAssociates();
-	}
-	
-	@Override
-	public List<BusinessUnit> getBusinessUnits() {
-		logger.info("Into getBusinessUnits");
-		return oraDataLoadDao.getAllBusinessUnits();
-	}
-
-	@Override
-	public ORAResponse fetchDataLoadLog(ORADataLoadRequest request) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	@Override
 	public FileUploadResponse uploadFile(MultipartFile file) {
 		logger.info("Into uploadFile");

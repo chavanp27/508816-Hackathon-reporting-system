@@ -36,7 +36,7 @@ public class ORAFilterControllerTest {
 	@Test
 	public void testGetAssociates() {
 		logger.info("Into testGetAssociates");
-		ORAResponse response = controller.getAssociates();
+		ORAResponse response = controller.getORAUsers();
 		assertNotNull(response);
 		
 		assertEquals(response.getStatus(), "SUCCESS");
