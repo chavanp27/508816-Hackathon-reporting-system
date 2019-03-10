@@ -2,9 +2,6 @@ package com.cts.ora.report.fetch.vo;
 
 
 
-import com.cts.ora.report.domain.model.BusinessUnit;
-import com.cts.ora.report.domain.model.Location;
-
 import lombok.Data;
 
 @Data
@@ -12,9 +9,9 @@ public class ParticipationMetrics {
 	
 	private Integer period;
 	
-	private Location location;
+	private Integer location;
 	
-	private BusinessUnit bussinessUnit;
+	private String bussinessUnit;
 	
 	private Integer headCount;
 	
