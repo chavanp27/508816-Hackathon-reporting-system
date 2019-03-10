@@ -3,7 +3,6 @@ package com.cts.ora.report.domain.model;
 import java.util.Date;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -59,9 +58,10 @@ public class City {
 	@OneToMany(mappedBy="city") @JsonIgnore
 	private Set<ResidenceArea> resAreas;
 	
-	@Transient
+	@Transient @JsonIgnore
 	private boolean isPersist;
-	@Transient
+	
+	@Transient @JsonIgnore
 	private boolean isUpdate;
 
 }

@@ -19,6 +19,6 @@ public class ORAFilterRequest extends ORARequest {
 	private List<Integer> countryIds;
 	private List<Integer> stateIds;
 	private List<Integer> cityIds;
-	private List<Integer> areaIds;
+	private List<String> areaIds;
 
 }

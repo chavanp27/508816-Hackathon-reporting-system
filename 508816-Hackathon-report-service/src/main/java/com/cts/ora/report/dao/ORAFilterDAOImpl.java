@@ -126,12 +126,6 @@ public class ORAFilterDAOImpl implements ORAFilterDAO {
 		try {
 			em = emf.createEntityManager();
 			projectLst = em.createQuery("SELECT p FROM Project p WHERE p.status='A'", Project.class).getResultList();
-			/*if(projectLst!=null){
-				projectLst.stream().forEach(p->{
-					logger.info("catgories::"+p.getCategories());
-					em.refresh(p.getCategories());
-				});
-			}*/
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error("Error in getAllProjects:"+e);
@@ -144,6 +138,8 @@ public class ORAFilterDAOImpl implements ORAFilterDAO {
 		logger.info("Out of getAllProjects");
 		return projectLst;
 	}
+	
+	
 
 	@Override
 	public List<EventCategory> getCategoriesByProject(List<Integer> projectIds) {
@@ -151,9 +147,18 @@ public class ORAFilterDAOImpl implements ORAFilterDAO {
 		List<EventCategory> eventCategoryLst=null;
 		try {
 			em = emf.createEntityManager();
-			eventCategoryLst = em.createQuery("SELECT e FROM EventCategory e JOIN Project p ON e.proj_id=p.proj_id "
-												+ "WHERE p.proj_id IN (:projectIds) AND p.status='A'"
-									, EventCategory.class).setParameter("projectIds", projectIds).getResultList();
+			if(projectIds!=null && projectIds.size()==1 && projectIds.get(0)==-1){
+				//Get All
+				eventCategoryLst = em.createQuery("SELECT e FROM EventCategory e, Project p "
+													+ "WHERE e.project=p AND p.status='A'", EventCategory.class)
+									 .setParameter("projectIds", projectIds).getResultList();
+			}else{
+				//Get by Id
+				eventCategoryLst = em.createQuery("SELECT e FROM EventCategory e, Project p "
+										+ "WHERE p.proj_id IN (:projectIds) AND e.project=p AND p.status='A'"
+							, EventCategory.class).setParameter("projectIds", projectIds).getResultList();
+			}
+			
 		} catch (Exception e) {
 			logger.error("Error in getAllEventCategories:"+e.getMessage());
 			return null;
@@ -177,7 +182,7 @@ public class ORAFilterDAOImpl implements ORAFilterDAO {
 				countryLst = em.createQuery("SELECT c FROM Country c", Country.class).getResultList();
 			}else{
 				//Get by Id
-				countryLst = em.createQuery("SELECT c FROM Country c WHERE c.locId = :cntryId", Country.class)
+				countryLst = em.createQuery("SELECT c FROM Country c WHERE c.cntryId IN (:cntryId)", Country.class)
 							.setParameter("cntryId", cntryId).getResultList();
 			}
 			
@@ -195,21 +200,81 @@ public class ORAFilterDAOImpl implements ORAFilterDAO {
 	}
 
 	@Override
-	public List<State> getStateById(List<Integer> stateId) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<State> getStateById(List<Integer> cntryIds) {
+		logger.info("Into getStateById:: "+cntryIds);
+		List<State> stateLst=null;
+		try {
+			em = emf.createEntityManager();
+			if(cntryIds!=null && cntryIds.size()==1 && cntryIds.get(0)==-1){
+				//Get All
+				stateLst = em.createQuery("SELECT s FROM State s", State.class).getResultList();
+			}else{
+				//Get by Id
+				stateLst = em.createQuery("SELECT s FROM State s, Country c WHERE c.cntryId IN (:cntryIds) AND s.country=c", State.class)
+							.setParameter("cntryIds", cntryIds).getResultList();
+			}
+		} catch (Exception e) {
+			logger.error("Error in getStateById:"+e.getMessage());
+			return null;
+		}finally {
+			if(em!=null){
+				em.close();
+			}
+		}
+		logger.info("Out of getStateById");
+		return stateLst;
 	}
 
 	@Override
-	public List<City> getCityById(List<Integer> cityId) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<City> getCityById(List<Integer> stateIds) {
+		logger.info("Into getCityById:: "+stateIds);
+		List<City> stateLst=null;
+		try {
+			em = emf.createEntityManager();
+			if(stateIds!=null && stateIds.size()==1 && stateIds.get(0)==-1){
+				//Get All
+				stateLst = em.createQuery("SELECT c FROM City c", City.class).getResultList();
+			}else{
+				//Get by Id
+				stateLst = em.createQuery("SELECT c FROM State s, City c WHERE s.stateId IN (:stateIds) AND c.state=s", City.class)
+							.setParameter("stateIds", stateIds).getResultList();
+			}
+		} catch (Exception e) {
+			logger.error("Error in getCityById:"+e.getMessage());
+			return null;
+		}finally {
+			if(em!=null){
+				em.close();
+			}
+		}
+		logger.info("Out of getCityById");
+		return stateLst;
 	}
 
 	@Override
-	public List<ResidenceArea> getAreaById(List<Integer> areaId) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<ResidenceArea> getAreaById(List<Integer> cityIds) {
+		logger.info("Into getAreaById:: "+cityIds);
+		List<ResidenceArea> areaLst=null;
+		try {
+			em = emf.createEntityManager();
+			if(cityIds!=null && cityIds.size()==1 && cityIds.get(0)==-1){
+				//Get All
+				areaLst = em.createQuery("SELECT r FROM ResidenceArea r", ResidenceArea.class).getResultList();
+			}else{
+				//Get by Id
+				areaLst = em.createQuery("SELECT r FROM ResidenceArea r, City c WHERE c.cityId IN (:cityIds) AND r.city=c", ResidenceArea.class)
+							.setParameter("cityIds", cityIds).getResultList();
+			}
+		} catch (Exception e) {
+			logger.error("Error in getAreaById:"+e.getMessage());
+			return null;
+		}finally {
+			if(em!=null){
+				em.close();
+			}
+		}
+		logger.info("Out of getAreaById");
+		return areaLst;
 	}
 
 	@Override

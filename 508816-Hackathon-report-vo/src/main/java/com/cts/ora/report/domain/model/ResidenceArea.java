@@ -60,9 +60,10 @@ public class ResidenceArea {
 	@OneToOne(mappedBy="area") @JsonIgnore
 	private PinCode pinCode;
 	
-	@Transient
+	@Transient @JsonIgnore
 	private boolean isPersist;
-	@Transient
+	
+	@Transient @JsonIgnore
 	private boolean isUpdate;
 
 }

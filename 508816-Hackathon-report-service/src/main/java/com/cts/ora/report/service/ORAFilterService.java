@@ -24,12 +24,12 @@ public interface ORAFilterService {
 	
 	List<Project> getAllProjects();
 	
-	List<EventCategory> getAllEventCategories();
+	List<EventCategory> getEventCategories(List<Integer> projectIds);
 	
 	List<Country> getCountryById(List<Integer> cntryId);
-	List<State> getStateById(List<Integer> stateId);
-	List<City> getCityById(List<Integer> cityId);
-	List<ResidenceArea> getAreaById(List<Integer> areaId);
-	List<PinCode> getPincodeById(List<String> cntryId);
+	List<State> getStateByCountry(List<Integer> cntryId);
+	List<City> getCityByState(List<Integer> stateId);
+	List<ResidenceArea> getAreaByCity(List<Integer> cityIds);
+	List<PinCode> getPincodeByArea(List<String> areaIds);
 
 }

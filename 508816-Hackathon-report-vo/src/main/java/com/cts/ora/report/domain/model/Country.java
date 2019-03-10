@@ -53,9 +53,9 @@ public class Country {
 	@OneToMany(mappedBy="country") @JsonIgnore
 	private Set<State> states;
 	
-	@Transient
+	@Transient @JsonIgnore
 	private boolean isPersist;
-	@Transient
+	@Transient @JsonIgnore
 	private boolean isUpdate;
 
 }

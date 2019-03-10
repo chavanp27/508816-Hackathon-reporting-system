@@ -52,8 +52,9 @@ public class PinCode {
 	@JoinColumn(name="areaId",insertable=true,updatable=true)
 	private ResidenceArea area;
 	
-	@Transient
+	@Transient @JsonIgnore
 	private boolean isPersist;
-	@Transient
+	
+	@Transient @JsonIgnore
 	private boolean isUpdate;
 }

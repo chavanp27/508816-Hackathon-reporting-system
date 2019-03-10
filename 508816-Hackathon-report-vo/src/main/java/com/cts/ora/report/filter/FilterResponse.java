@@ -4,8 +4,12 @@ import java.util.List;
 
 import com.cts.ora.report.common.vo.ORAResponse;
 import com.cts.ora.report.domain.model.BusinessUnit;
+import com.cts.ora.report.domain.model.City;
 import com.cts.ora.report.domain.model.Country;
+import com.cts.ora.report.domain.model.EventCategory;
+import com.cts.ora.report.domain.model.PinCode;
 import com.cts.ora.report.domain.model.Project;
+import com.cts.ora.report.domain.model.ResidenceArea;
 import com.cts.ora.report.domain.model.State;
 import com.cts.ora.report.domain.model.UserDetail;
 
@@ -26,8 +30,16 @@ public class FilterResponse extends ORAResponse {
 	
 	List<Project> projects;
 	
+	List<EventCategory> categories;
+	
 	List<Country> countries;
 	
 	List<State> states;
+	
+	List<City> cities;
+	
+	List<ResidenceArea> areas;
+	
+	List<PinCode> pinCodes;
 
 }

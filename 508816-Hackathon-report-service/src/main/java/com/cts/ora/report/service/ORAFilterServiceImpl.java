@@ -53,9 +53,9 @@ public class ORAFilterServiceImpl implements ORAFilterService {
 	}
 
 	@Override
-	public List<EventCategory> getAllEventCategories() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<EventCategory> getEventCategories(List<Integer> projectids) {
+		logger.info("Into getEventCategories");
+		return filterDAO.getCategoriesByProject(projectids);
 	}
 
 	@Override
@@ -65,25 +65,26 @@ public class ORAFilterServiceImpl implements ORAFilterService {
 	}
 
 	@Override
-	public List<State> getStateById(List<Integer> stateId) {
+	public List<State> getStateByCountry(List<Integer> cntryId) {
 		logger.info("Into getStateById");
-		return filterDAO.getStateById(stateId);
+		//List<Country> countries = filterDAO.getCountryById(cntryId);
+		return filterDAO.getStateById(cntryId);
 	}
 
 	@Override
-	public List<City> getCityById(List<Integer> cityId) {
+	public List<City> getCityByState(List<Integer> stateId) {
 		logger.info("Into getCityById");
-		return filterDAO.getCityById(cityId);
+		return filterDAO.getCityById(stateId);
 	}
 
 	@Override
-	public List<ResidenceArea> getAreaById(List<Integer> areaId) {
+	public List<ResidenceArea> getAreaByCity(List<Integer> cityIds) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<PinCode> getPincodeById(List<String> cntryId) {
+	public List<PinCode> getPincodeByArea(List<String> areaIds) {
 		// TODO Auto-generated method stub
 		return null;
 	}
