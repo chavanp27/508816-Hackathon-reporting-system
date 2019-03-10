@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -40,10 +41,10 @@ public class ORAUtil {
 		return result;
 	}
 
-	public static Date getPeriod(Integer period) {
-		Date date = null;
-
-		return date;
+	public static String getDateForPeriod(Integer period) {
+		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+		Calendar cal = new GregorianCalendar(Integer.parseInt(period.toString().substring(0, 4)),Integer.parseInt(period.toString().substring(4, 6))-1,1);
+		return  dateFormatter.format(cal.getTime());
 	}
 
 	public static Integer incrementPeriod(Integer period) {
@@ -141,5 +142,10 @@ public class ORAUtil {
 		Collections.sort(periods);
 		logger.info("ORAUtils", "Exiting getPeriodListForQuarter()");
 		return periods;
+	}
+	
+	
+	public static void main(String [] args) {
+		System.out.println(getDateForPeriod(201812));
 	}
 }
