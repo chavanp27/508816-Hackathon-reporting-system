@@ -17,5 +17,8 @@ public class ORAFilterRequest extends ORARequest {
 	private static final long serialVersionUID = 1L;
 	private List<Integer> projectIds;
 	private List<Integer> countryIds;
+	private List<Integer> stateIds;
+	private List<Integer> cityIds;
+	private List<Integer> areaIds;
 
 }

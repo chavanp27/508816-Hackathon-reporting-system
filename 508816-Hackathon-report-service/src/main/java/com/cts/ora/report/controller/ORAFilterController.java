@@ -30,7 +30,7 @@ public class ORAFilterController {
 		logger.info("In getORAUsers");
 		FilterResponse resp=new FilterResponse();
 		try {
-			resp.setUsers(service.getAssociates());
+			resp.setUsers(service.getUsers());
 			ORAMessageUtil.setSuccessMessage(resp);
 			
 		} catch (Exception e) {
@@ -73,6 +73,24 @@ public class ORAFilterController {
 			ORAMessageUtil.setFailureMessage(resp);
 		}
 		logger.info("Out of getProjects");
+		return resp;
+	}
+	
+	@PostMapping("/country/get")
+	@ResponseBody
+	public FilterResponse getCountry(@RequestBody ORAFilterRequest req){
+		logger.info("In getCountry");
+		FilterResponse resp=new FilterResponse();
+		try {
+			resp.setCountries(service.getCountryById(req.getCountryIds()));
+			logger.info("resp::"+resp.getCountries());
+			ORAMessageUtil.setSuccessMessage(resp);
+			
+		} catch (Exception e) {
+			logger.error("Exception in getCountry"+e.getMessage());
+			ORAMessageUtil.setFailureMessage(resp);
+		}
+		logger.info("Out of getCountry");
 		return resp;
 	}
 

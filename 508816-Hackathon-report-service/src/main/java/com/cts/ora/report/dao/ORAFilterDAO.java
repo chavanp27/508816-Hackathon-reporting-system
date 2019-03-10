@@ -12,13 +12,14 @@ import com.cts.ora.report.domain.model.PinCode;
 import com.cts.ora.report.domain.model.Project;
 import com.cts.ora.report.domain.model.ResidenceArea;
 import com.cts.ora.report.domain.model.State;
+import com.cts.ora.report.domain.model.UserDetail;
 import com.cts.ora.report.vo.UserConfig;
 
 public interface ORAFilterDAO {
 	
 	UserConfig getUserConfig(ORARequest req);
 
-	List<Associate> getAllAssociates();
+	List<UserDetail> getAllAssociates();
 	
 	List<Associate> getAssociateById(List<Long> ascIdLst);
 	
@@ -27,10 +28,10 @@ public interface ORAFilterDAO {
 	List<Project> getAllProjects();
 	List<EventCategory> getCategoriesByProject(List<Integer> projectIds);
 	
-	List<Country> getCountryById(List<Long> cntryId);
-	List<State> getStateById(List<Long> stateId);
-	List<City> getCityById(List<Long> cityId);
-	List<ResidenceArea> getAreaById(List<Long> areaId);
+	List<Country> getCountryById(List<Integer> cntryId);
+	List<State> getStateById(List<Integer> stateId);
+	List<City> getCityById(List<Integer> cityId);
+	List<ResidenceArea> getAreaById(List<Integer> areaId);
 	List<PinCode> getPincodeById(List<String> pinNums);
 	
 	String getInboundFileLocation(Long fileId);

@@ -21,6 +21,7 @@ import com.cts.ora.report.domain.model.PinCode;
 import com.cts.ora.report.domain.model.Project;
 import com.cts.ora.report.domain.model.ResidenceArea;
 import com.cts.ora.report.domain.model.State;
+import com.cts.ora.report.domain.model.UserDetail;
 import com.cts.ora.report.vo.UserConfig;
 
 @Component
@@ -39,10 +40,37 @@ public class ORAFilterDAOImpl implements ORAFilterDAO {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public List<Associate> getAllAssociates() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<UserDetail> getAllAssociates() {
+		logger.info("Into getAllAssociates::");
+		UserDetail udtl=null;
+		List<UserDetail> userDetails = null;
+		
+		String sql = "SELECT a.asc_id,a.asc_name, a.is_poc, "
+				+ "case when u.role_id=1 then 1 else 0 end AS is_admin, "
+				+ "case when u.role_id=3 then 1 else 0 end AS is_pmo,"
+				+ "case when rd.role_name is null AND a.is_poc=1 then 'Event POC' else rd.role_name end as role_name "
+				+ "FROM ora_outreach_associate a "
+				+ "left join ora_ui_user u ON a.asc_id=u.emp_id AND u.status='ACTIVE' "
+				+ "left join ora_ui_role_def rd ON rd.role_id=u.role_id AND u.role_id IN (2,3) "
+				+ "WHERE a.is_volunteer=1";
+		try {
+			em = emf.createEntityManager();
+			userDetails =  em.createNativeQuery(sql,"UserDetailsMapping")
+								.getResultList();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error("Error in getAllAssociates:"+e.getMessage());
+			return null;
+		}finally {
+			if(em!=null){
+				em.close();
+			}
+		}
+		logger.info("Out of getAllAssociates");
+		return userDetails;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -97,7 +125,7 @@ public class ORAFilterDAOImpl implements ORAFilterDAO {
 		List<Project> projectLst=null;
 		try {
 			em = emf.createEntityManager();
-			projectLst = em.createQuery("SELECT p FROM Project p", Project.class).getResultList();
+			projectLst = em.createQuery("SELECT p FROM Project p WHERE p.status='A'", Project.class).getResultList();
 			/*if(projectLst!=null){
 				projectLst.stream().forEach(p->{
 					logger.info("catgories::"+p.getCategories());
@@ -123,7 +151,9 @@ public class ORAFilterDAOImpl implements ORAFilterDAO {
 		List<EventCategory> eventCategoryLst=null;
 		try {
 			em = emf.createEntityManager();
-			eventCategoryLst = em.createQuery("SELECT e FROM EventCategory e", EventCategory.class).getResultList();
+			eventCategoryLst = em.createQuery("SELECT e FROM EventCategory e JOIN Project p ON e.proj_id=p.proj_id "
+												+ "WHERE p.proj_id IN (:projectIds) AND p.status='A'"
+									, EventCategory.class).setParameter("projectIds", projectIds).getResultList();
 		} catch (Exception e) {
 			logger.error("Error in getAllEventCategories:"+e.getMessage());
 			return null;
@@ -137,7 +167,7 @@ public class ORAFilterDAOImpl implements ORAFilterDAO {
 	}
 
 	@Override
-	public List<Country> getCountryById(List<Long> cntryId) {
+	public List<Country> getCountryById(List<Integer> cntryId) {
 		logger.info("Into getCountryById:: "+cntryId);
 		List<Country> countryLst=null;
 		try {
@@ -165,19 +195,19 @@ public class ORAFilterDAOImpl implements ORAFilterDAO {
 	}
 
 	@Override
-	public List<State> getStateById(List<Long> stateId) {
+	public List<State> getStateById(List<Integer> stateId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<City> getCityById(List<Long> cityId) {
+	public List<City> getCityById(List<Integer> cityId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<ResidenceArea> getAreaById(List<Long> areaId) {
+	public List<ResidenceArea> getAreaById(List<Integer> areaId) {
 		// TODO Auto-generated method stub
 		return null;
 	}

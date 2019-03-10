@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import com.cts.ora.report.common.vo.ORAResponse;
 import com.cts.ora.report.dao.ORAFilterDAO;
-import com.cts.ora.report.domain.model.Associate;
 import com.cts.ora.report.domain.model.BusinessUnit;
 import com.cts.ora.report.domain.model.City;
 import com.cts.ora.report.domain.model.Country;
@@ -18,6 +17,7 @@ import com.cts.ora.report.domain.model.PinCode;
 import com.cts.ora.report.domain.model.Project;
 import com.cts.ora.report.domain.model.ResidenceArea;
 import com.cts.ora.report.domain.model.State;
+import com.cts.ora.report.domain.model.UserDetail;
 import com.cts.ora.report.vo.ORAFilterRequest;
 
 @Component
@@ -29,8 +29,8 @@ public class ORAFilterServiceImpl implements ORAFilterService {
 	ORAFilterDAO filterDAO;
 
 	@Override
-	public List<Associate> getAssociates() {
-		logger.info("Into getAssociates");
+	public List<UserDetail> getUsers() {
+		logger.info("Into getUsers");
 		return filterDAO.getAllAssociates();
 	}
 	
@@ -59,25 +59,25 @@ public class ORAFilterServiceImpl implements ORAFilterService {
 	}
 
 	@Override
-	public List<Country> getCountryById(List<Long> cntryId) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Country> getCountryById(List<Integer> cntryId) {
+		logger.info("Into getCountryById");
+		return filterDAO.getCountryById(cntryId);
 	}
 
 	@Override
-	public List<State> getStateById(List<Long> stateId) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<State> getStateById(List<Integer> stateId) {
+		logger.info("Into getStateById");
+		return filterDAO.getStateById(stateId);
 	}
 
 	@Override
-	public List<City> getCityById(List<Long> cityId) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<City> getCityById(List<Integer> cityId) {
+		logger.info("Into getCityById");
+		return filterDAO.getCityById(cityId);
 	}
 
 	@Override
-	public List<ResidenceArea> getAreaById(List<Long> areaId) {
+	public List<ResidenceArea> getAreaById(List<Integer> areaId) {
 		// TODO Auto-generated method stub
 		return null;
 	}

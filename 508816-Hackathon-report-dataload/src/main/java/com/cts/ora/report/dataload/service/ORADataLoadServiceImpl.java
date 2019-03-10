@@ -805,6 +805,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 					}else{
 						a.setFirstVolunteerDate(aEvnt.getEvent().getEventDate());
 					}
+					a.setIsVolunteer(Boolean.TRUE);
 					aEvnt.setAsc(a);
 				}else{
 					aEvnt.setPersist(Boolean.FALSE);

@@ -15,6 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.cts.ora.report.Application;
 import com.cts.ora.report.common.vo.ORAResponse;
+import com.cts.ora.report.filter.FilterResponse;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes=Application.class)
@@ -36,7 +37,7 @@ public class ORAFilterControllerTest {
 	@Test
 	public void testGetAssociates() {
 		logger.info("Into testGetAssociates");
-		ORAResponse response = controller.getORAUsers();
+		FilterResponse response = controller.getORAUsers();
 		assertNotNull(response);
 		
 		assertEquals(response.getStatus(), "SUCCESS");
