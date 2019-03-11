@@ -74,7 +74,7 @@ public class AcquisitionMetricsServiceImpl implements AcquisitionMetricsService 
 			List<Associate> prevassc=null;
 			List<Associate> assc=eventMap.get(key).stream().map(e->e.getVolunteers()).flatMap(Collection :: stream).collect(Collectors.toList());
 			AcquisitionMetrics m=new AcquisitionMetrics();
-			m.setLocation(key.getValue1());
+			m.setLocation(key.getValue1().getLocId());
 			m.setPeriod(key.getValue0());
 			m.setNoNewVolunteer(assc.size());
 			Pair<Integer, Location> prev=new Pair<Integer, Location>(ORAUtil.decrementPeriod(key.getValue0()), key.getValue1());
@@ -102,31 +102,43 @@ public class AcquisitionMetricsServiceImpl implements AcquisitionMetricsService 
 
 	private List<AcquisitionMetrics> calculateAcquisitionMetricForBu(List<EventInfo> prevMetricData,
 			List<EventInfo> metricsData, FetchRequest request) {
+		List<AcquisitionMetrics> am=new ArrayList<>();
 		metricsData.forEach(d->d.setVolunteers(d.getVolunteers().stream().filter(v->isFisrtVolunteer(v,request)&& request.getBu().contains(v.getBu().getName())).collect(Collectors.toSet())));
 		Map<Integer, List<EventInfo>> eventMap=metricsData.stream().collect(Collectors.groupingBy(EventInfo :: getPeriod));
-		Map<Integer,Map<String,List<EventInfo>>> buMap=getBUMap(eventMap);
-		for (Integer key : eventMap.keySet()) {
-			List<Associate> prevassc=null;
-			List<Associate> assc=eventMap.get(key).stream().map(e->e.getVolunteers()).flatMap(Collection :: stream).collect(Collectors.toList());
-			
+		Map<Integer,Map<String,List<Associate>>> buMap=getBUMap(eventMap);
+		Map<Integer,Map<String,List<Associate>>> prevbuMap=getBUMap(prevMetricData.stream().collect(Collectors.groupingBy(EventInfo :: getPeriod)));
+		for (Integer key : buMap.keySet()) {
+			AcquisitionMetrics m=new AcquisitionMetrics();
+			for (String key1 : buMap.get(key).keySet()) {
+				m.setPeriod(key);
+				m.setBussinessUnit(key1);
+				m.setNoNewVolunteer(buMap.get(key).get(key1).size());
+				Integer lastPeriod=ORAUtil.decrementPeriod(key);
+				if(buMap.containsKey(lastPeriod)) {
+					m.setPercenatgeVolunAsLast((buMap.get(lastPeriod).get(key1).size()/buMap.get(key).get(key1).size())*100);
+				}else {
+					m.setPercenatgeVolunAsLast((prevbuMap.get(lastPeriod).get(key1).size()/buMap.get(key).get(key1).size())*100);
+				}
+			}
+			am.add(m);
 		}
-		return null;
+		return am;
 	}
 
-	private Map<Integer, Map<String, List<EventInfo>>> getBUMap(Map<Integer, List<EventInfo>> eventMap) {
-		String prevBU=null;
-		Map<Integer, Map<String, List<EventInfo>>> buMap= new HashMap<>();
+	private Map<Integer, Map<String, List<Associate>>> getBUMap(Map<Integer, List<EventInfo>> eventMap) {
+		Long prevAssc=null;
+		Map<Integer, Map<String, List<Associate>>> buMap= new HashMap<>();
 		for(Entry<Integer, List<EventInfo>> e:eventMap.entrySet()) {
-			Map<String, List<EventInfo>> tMap = new HashMap<>();
+			Map<String, List<Associate>> tMap = new HashMap<>();
 			for(EventInfo l: e.getValue()) {
 				for(Associate a:l.getVolunteers()) {
-					List<EventInfo> lList=tMap.computeIfAbsent(a.getBu().getName(), k -> new ArrayList<>());
-					if(null==prevBU || !a.getBu().getName().equals(prevBU)) {
-						lList.add(l);
+					List<Associate> lList=tMap.computeIfAbsent(a.getBu().getName(), k -> new ArrayList<>());
+					if(null==prevAssc || !a.getId().equals(prevAssc)) {
+						lList.add(a);
 					}
-					prevBU=a.getBu().getName();
+					prevAssc=a.getId();
 				}
-				prevBU=null;
+				prevAssc=null;
 			}
 			buMap.put(e.getKey(),tMap);
 		}

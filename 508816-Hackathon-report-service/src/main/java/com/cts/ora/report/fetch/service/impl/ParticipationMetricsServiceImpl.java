@@ -8,9 +8,13 @@ import org.springframework.stereotype.Service;
 
 import com.cts.ora.report.domain.model.BuMetrics;
 import com.cts.ora.report.domain.model.GeoMetrics;
+import com.cts.ora.report.domain.model.ORAUser;
+import com.cts.ora.report.fetch.dao.BuMetricsDao;
+import com.cts.ora.report.fetch.dao.GeoMetricsDao;
 import com.cts.ora.report.fetch.repository.BuMetricsRepository;
 import com.cts.ora.report.fetch.repository.GeoMetricsRepository;
 import com.cts.ora.report.fetch.repository.LocationRepository;
+import com.cts.ora.report.fetch.repository.ORAUserRepository;
 import com.cts.ora.report.fetch.service.LocationService;
 import com.cts.ora.report.fetch.service.ParticipationMetricsService;
 import com.cts.ora.report.fetch.vo.FetchRequest;
@@ -20,21 +24,36 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 
 	@Autowired
 	GeoMetricsRepository geoMetricsRepository;
-	
+	@Autowired
+	GeoMetricsDao geoMerticsDao;
 	@Autowired
 	BuMetricsRepository buMetricsRepository;
 	
 	@Autowired
 	LocationService locationService;
 	
+	@Autowired
+	ORAUserRepository oRAUserRepository;
+	@Autowired
+	BuMetricsDao buMetricsDao;
+	
 	@Override
 	public List<ParticipationMetrics>  getGeographyMetrics(FetchRequest request) {
 		List<ParticipationMetrics> metrics=null;
 		List<GeoMetrics> metricsData=null;
-		if(ServiceHelper.isRequestForAllGeo(request)) {
-			metricsData=geoMetricsRepository.getGeoMetricsForPeriod(request.getStartPeriod(), request.getEndPeriod());
+		ORAUser loggedInUsr=oRAUserRepository.getLoggedInUser(request.getAscId());
+		if(!loggedInUsr.getRole().getRoleName().equals("PMO") && !loggedInUsr.getRole().getRoleName().equals("Admin")) {
+			if(ServiceHelper.isRequestForAllGeo(request)) {
+				metricsData=geoMerticsDao.getGeoMetricsForUser(request.getStartPeriod(), request.getEndPeriod(), new ArrayList<>(), request.getAscId());
+			}else {
+				metricsData=geoMerticsDao.getGeoMetricsForUser(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request), request.getAscId());
+			}
 		}else {
-			metricsData=geoMetricsRepository.getGeoMetricsForPeriodLocation(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request));
+			if(ServiceHelper.isRequestForAllGeo(request)) {
+				metricsData=geoMetricsRepository.getGeoMetricsForPeriod(request.getStartPeriod(), request.getEndPeriod());
+			}else {
+				metricsData=geoMetricsRepository.getGeoMetricsForPeriodLocation(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request));
+			}
 		}
 		metrics=calculateParticipationMetricsForGeo(metricsData);
 		return metrics;
@@ -42,6 +61,7 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 
 	
 	private List<ParticipationMetrics> calculateParticipationMetricsForGeo(List<GeoMetrics> metricsData) {
+		
 		List<ParticipationMetrics> pm=new ArrayList<>();
 		for (GeoMetrics gm : metricsData) {
 			ParticipationMetrics m=new ParticipationMetrics();
@@ -67,10 +87,19 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 	public List<ParticipationMetrics>  getBUMetrics(FetchRequest request) {
 		List<ParticipationMetrics> metrics=null;
 		List<BuMetrics> metricsData=null;
-		if(ServiceHelper.isRequestForAllGeo(request)) {
-			metricsData=buMetricsRepository.getBuMetricsForPeriod(request.getStartPeriod(), request.getEndPeriod());
+		ORAUser loggedInUsr=oRAUserRepository.getLoggedInUser(request.getAscId());
+		if(!loggedInUsr.getRole().getRoleName().equals("PMO") && !loggedInUsr.getRole().getRoleName().equals("Admin")) {
+			if(ServiceHelper.isRequestForAllGeo(request)) {
+				metricsData=buMetricsDao.getBuMetricsForUser(request.getStartPeriod(), request.getEndPeriod(), new ArrayList<>(), request.getAscId());
+			}else {
+				metricsData=buMetricsDao.getBuMetricsForUser(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request), request.getAscId());
+			}
 		}else {
-			metricsData=buMetricsRepository.getBuMetricsForPeriodLocation(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request));
+			if(ServiceHelper.isRequestForAllGeo(request)) {
+				metricsData=buMetricsRepository.getBuMetricsForPeriod(request.getStartPeriod(), request.getEndPeriod());
+			}else {
+				metricsData=buMetricsRepository.getBuMetricsForPeriodLocation(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request));
+			}
 		}
 		metrics=calculateParticipationMetricsForBu(metricsData);
 		return metrics;

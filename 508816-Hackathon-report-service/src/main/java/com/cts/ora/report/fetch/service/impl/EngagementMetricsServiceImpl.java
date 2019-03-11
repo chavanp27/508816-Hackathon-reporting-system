@@ -18,7 +18,10 @@ import com.cts.ora.report.domain.model.Associate;
 import com.cts.ora.report.domain.model.BusinessUnit;
 import com.cts.ora.report.domain.model.EventInfo;
 import com.cts.ora.report.domain.model.Location;
+import com.cts.ora.report.domain.model.ORAUser;
 import com.cts.ora.report.fetch.repository.EventInfoRepository;
+import com.cts.ora.report.fetch.repository.EventMapRepository;
+import com.cts.ora.report.fetch.repository.ORAUserRepository;
 import com.cts.ora.report.fetch.service.EngagementMetricsService;
 import com.cts.ora.report.fetch.service.LocationService;
 import com.cts.ora.report.fetch.vo.EngagementMetrics;
@@ -34,6 +37,13 @@ public class EngagementMetricsServiceImpl implements EngagementMetricsService {
 	@Autowired
 	LocationService locationService;
 	
+	@Autowired
+	ORAUserRepository oRAUserRepository;
+	
+	@Autowired
+	EventMapRepository eventMapRepository;
+	
+	
 	@Override
 	public List<EngagementMetrics> getGeographyMetrics(FetchRequest request) {
 		List<EngagementMetrics> metrics=null;
@@ -42,6 +52,11 @@ public class EngagementMetricsServiceImpl implements EngagementMetricsService {
 			metricsData=eventInfoRepository.getEventsByPeriod(request.getStartPeriod(), request.getEndPeriod());
 		}else {
 			metricsData=eventInfoRepository.getEventsByPeriodLocation(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request));
+		}
+		ORAUser loggedInUsr=oRAUserRepository.getLoggedInUser(request.getAscId());
+		if(!loggedInUsr.getRole().getRoleName().equals("PMO") && !loggedInUsr.getRole().getRoleName().equals("Admin")) {
+			List<String> events=eventMapRepository.getEventsForUser(request.getAscId());
+			metricsData=metricsData.stream().filter(m->events.contains(m.getEventId())).collect(Collectors.toList());
 		}
 		metrics=calculateMetricsForGeography(metricsData);
 		return metrics;
@@ -82,6 +97,11 @@ public class EngagementMetricsServiceImpl implements EngagementMetricsService {
 	@Override
 	public List<EngagementMetrics> getBUMetrics(FetchRequest request) {
 		List<EventInfo> metricsData=eventInfoRepository.getEventsByPeriod(request.getStartPeriod(), request.getEndPeriod());
+		ORAUser loggedInUsr=oRAUserRepository.getLoggedInUser(request.getAscId());
+		if(!loggedInUsr.getRole().getRoleName().equals("PMO") && !loggedInUsr.getRole().getRoleName().equals("Admin")) {
+			List<String> events=eventMapRepository.getEventsForUser(request.getAscId());
+			metricsData=metricsData.stream().filter(m->events.contains(m.getEventId())).collect(Collectors.toList());
+		}
 		List<EngagementMetrics> metrics=calculateMetricsForBU(metricsData,request.getBu());
 		return metrics;
 	}
