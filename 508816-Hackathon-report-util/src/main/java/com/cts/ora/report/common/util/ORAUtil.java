@@ -51,6 +51,10 @@ public class ORAUtil {
 		return nextPeriod(period, 1);
 	}
 
+	public static Integer decrementPeriod(Integer period) {
+		return nextPeriod(period, -1);
+	}
+	
 	private static Integer nextPeriod(Integer period, int increment) {
 		try {
 			SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMM");
