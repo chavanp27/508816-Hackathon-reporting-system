@@ -16,7 +16,7 @@ import com.cts.ora.report.domain.model.BusinessUnit;
 import com.cts.ora.report.domain.model.City;
 import com.cts.ora.report.domain.model.Country;
 import com.cts.ora.report.domain.model.EventCategory;
-import com.cts.ora.report.domain.model.Location;
+import com.cts.ora.report.domain.model.IncomingFile;
 import com.cts.ora.report.domain.model.PinCode;
 import com.cts.ora.report.domain.model.Project;
 import com.cts.ora.report.domain.model.ResidenceArea;
@@ -49,7 +49,8 @@ public class ORAFilterDAOImpl implements ORAFilterDAO {
 		
 		String sql = "SELECT a.asc_id,a.asc_name, a.is_poc, "
 				+ "case when u.role_id=1 then 1 else 0 end AS is_admin, "
-				+ "case when u.role_id=3 then 1 else 0 end AS is_pmo,"
+				+ "case wh"
+				+ "en u.role_id=3 then 1 else 0 end AS is_pmo,"
 				+ "case when rd.role_name is null AND a.is_poc=1 then 'Event POC' else rd.role_name end as role_name "
 				+ "FROM ora_outreach_associate a "
 				+ "left join ora_ui_user u ON a.asc_id=u.emp_id AND u.status='ACTIVE' "
@@ -278,26 +279,29 @@ public class ORAFilterDAOImpl implements ORAFilterDAO {
 	}
 
 	@Override
-	public List<PinCode> getPincodeById(List<String> pinNums) {
-		logger.info("Into getLocationBasedOnPinCode:: "+pinNums);
-		Location location=null;
+	public List<PinCode> getPincodeById(List<Integer> areaIds) {
+		logger.info("Into getPincodeById:: "+areaIds);
+		List<PinCode> pinCodeaLst=null;
 		try {
 			em = emf.createEntityManager();
-			if(pinNums!=null){
-				location = em.createQuery("SELECT l FROM Location l, PinCode p WHERE l.codeId=p.codeId AND p.name = :pinNum", Location.class)
-							.setParameter("pinNum", pinNums).getSingleResult();
+			if(areaIds!=null && areaIds.size()==1 && areaIds.get(0)==-1){
+				//Get All
+				pinCodeaLst = em.createQuery("SELECT p FROM PinCode p", PinCode.class).getResultList();
+			}else{
+				//Get by Id
+				pinCodeaLst = em.createQuery("SELECT p FROM ResidenceArea r, PinCode p WHERE r.areaId IN (:areaIds) AND p.area=r", PinCode.class)
+							.setParameter("areaIds", areaIds).getResultList();
 			}
-			
 		} catch (Exception e) {
-			logger.error("Error in getLocationBasedOnPinCode:"+e.getMessage());
+			logger.error("Error in getPincodeById:"+e.getMessage());
 			return null;
 		}finally {
 			if(em!=null){
 				em.close();
 			}
 		}
-		logger.info("Out of getLocationBasedOnPinCode");
-		return null;
+		logger.info("Out of getPincodeById");
+		return pinCodeaLst;
 	}
 
 	@Override
@@ -318,6 +322,25 @@ public class ORAFilterDAOImpl implements ORAFilterDAO {
 		}
 		logger.info("Out of geAllBusinessUnits");
 		return fileLocation;
+	}
+
+	@Override
+	public List<IncomingFile> getDataLoadHistory() {
+		logger.info("Into getDataLoadHistory");
+		List<IncomingFile> dataLoadList=null;
+		try {
+			em = emf.createEntityManager();
+			dataLoadList = em.createQuery("SELECT f FROM IncomingFile f", IncomingFile.class).getResultList();
+		} catch (Exception e) {
+			logger.error("Error in getDataLoadHistory:"+e.getMessage());
+			return null;
+		}finally {
+			if(em!=null){
+				em.close();
+			}
+		}
+		logger.info("Out of getDataLoadHistory");
+		return dataLoadList;
 	}
 
 }

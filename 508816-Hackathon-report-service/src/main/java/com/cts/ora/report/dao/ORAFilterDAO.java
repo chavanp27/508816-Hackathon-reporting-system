@@ -8,6 +8,7 @@ import com.cts.ora.report.domain.model.BusinessUnit;
 import com.cts.ora.report.domain.model.City;
 import com.cts.ora.report.domain.model.Country;
 import com.cts.ora.report.domain.model.EventCategory;
+import com.cts.ora.report.domain.model.IncomingFile;
 import com.cts.ora.report.domain.model.PinCode;
 import com.cts.ora.report.domain.model.Project;
 import com.cts.ora.report.domain.model.ResidenceArea;
@@ -32,9 +33,11 @@ public interface ORAFilterDAO {
 	List<State> getStateById(List<Integer> stateId);
 	List<City> getCityById(List<Integer> cityId);
 	List<ResidenceArea> getAreaById(List<Integer> areaId);
-	List<PinCode> getPincodeById(List<String> pinNums);
+	List<PinCode> getPincodeById(List<Integer> areaIds);
 	
 	String getInboundFileLocation(Long fileId);
+	
+	List<IncomingFile> getDataLoadHistory();
 	
 
 }

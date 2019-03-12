@@ -183,5 +183,23 @@ public class ORAFilterController {
 		logger.info("Out of getPincodeByArea");
 		return resp;
 	}
+	
+	@GetMapping("/dataLoad/log/get")
+	@ResponseBody
+	public FilterResponse getDataLoadLog(){
+		logger.info("In getPincodeByArea");
+		FilterResponse resp=new FilterResponse();
+		try {
+			resp.setDataLoadLog(service.getDataLoadHistory());
+			logger.info("resp::"+resp.getPinCodes());
+			ORAMessageUtil.setSuccessMessage(resp);
+			
+		} catch (Exception e) {
+			logger.error("Exception in getPincodeByArea"+e.getMessage());
+			ORAMessageUtil.setFailureMessage(resp);
+		}
+		logger.info("Out of getPincodeByArea");
+		return resp;
+	}
 
 }

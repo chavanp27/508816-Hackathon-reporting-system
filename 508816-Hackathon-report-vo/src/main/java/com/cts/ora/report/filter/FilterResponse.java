@@ -7,6 +7,7 @@ import com.cts.ora.report.domain.model.BusinessUnit;
 import com.cts.ora.report.domain.model.City;
 import com.cts.ora.report.domain.model.Country;
 import com.cts.ora.report.domain.model.EventCategory;
+import com.cts.ora.report.domain.model.IncomingFile;
 import com.cts.ora.report.domain.model.PinCode;
 import com.cts.ora.report.domain.model.Project;
 import com.cts.ora.report.domain.model.ResidenceArea;
@@ -41,5 +42,7 @@ public class FilterResponse extends ORAResponse {
 	List<ResidenceArea> areas;
 	
 	List<PinCode> pinCodes;
+	
+	List<IncomingFile> dataLoadLog;
 
 }

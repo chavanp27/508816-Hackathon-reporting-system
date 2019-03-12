@@ -13,6 +13,7 @@ import com.cts.ora.report.domain.model.BusinessUnit;
 import com.cts.ora.report.domain.model.City;
 import com.cts.ora.report.domain.model.Country;
 import com.cts.ora.report.domain.model.EventCategory;
+import com.cts.ora.report.domain.model.IncomingFile;
 import com.cts.ora.report.domain.model.PinCode;
 import com.cts.ora.report.domain.model.Project;
 import com.cts.ora.report.domain.model.ResidenceArea;
@@ -79,14 +80,20 @@ public class ORAFilterServiceImpl implements ORAFilterService {
 
 	@Override
 	public List<ResidenceArea> getAreaByCity(List<Integer> cityIds) {
-		// TODO Auto-generated method stub
-		return null;
+		logger.info("Into getCityById");
+		return filterDAO.getAreaById(cityIds);
 	}
 
 	@Override
-	public List<PinCode> getPincodeByArea(List<String> areaIds) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<PinCode> getPincodeByArea(List<Integer> areaIds) {
+		logger.info("Into getCityById");
+		return filterDAO.getPincodeById(areaIds);
+	}
+
+	@Override
+	public List<IncomingFile> getDataLoadHistory() {
+		logger.info("Into getDataLoadHistory");
+		return filterDAO.getDataLoadHistory();
 	}
 
 }

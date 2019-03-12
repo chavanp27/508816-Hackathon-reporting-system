@@ -9,11 +9,13 @@ import javax.persistence.TypedQuery;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import com.cts.ora.report.domain.model.BuMetrics;
 import com.cts.ora.report.fetch.vo.ParticipationMetricsDetails;
 
+@Component
 public class BuMetricsDaoImpl implements BuMetricsDao {
 
 	Logger logger=LoggerFactory.getLogger(BuMetricsDaoImpl.class);

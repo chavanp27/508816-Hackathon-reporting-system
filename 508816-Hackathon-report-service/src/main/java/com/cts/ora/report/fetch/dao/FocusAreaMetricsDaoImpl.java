@@ -9,10 +9,12 @@ import javax.persistence.TypedQuery;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import com.cts.ora.report.fetch.vo.FocusAreaMetrics;
 
+@Component
 public class FocusAreaMetricsDaoImpl implements FocusAreaMetricsDao {
 
 	Logger logger=LoggerFactory.getLogger(FocusAreaMetricsDaoImpl.class);
