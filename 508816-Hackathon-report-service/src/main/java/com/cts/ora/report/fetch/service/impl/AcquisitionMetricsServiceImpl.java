@@ -1,14 +1,11 @@
 package com.cts.ora.report.fetch.service.impl;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,15 +13,12 @@ import java.util.stream.Collectors;
 
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.datetime.joda.DateTimeParser;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import com.cts.ora.report.common.util.ORAUtil;
 import com.cts.ora.report.domain.model.Associate;
 import com.cts.ora.report.domain.model.EventInfo;
 import com.cts.ora.report.domain.model.Location;
-import com.cts.ora.report.fetch.repository.AssociateRepository;
 import com.cts.ora.report.fetch.repository.EventInfoRepository;
 import com.cts.ora.report.fetch.service.AcquisitionMetricsService;
 import com.cts.ora.report.fetch.service.LocationService;
@@ -34,8 +28,7 @@ import com.cts.ora.report.fetch.vo.FetchRequest;
 @Service
 public class AcquisitionMetricsServiceImpl implements AcquisitionMetricsService {
 
-	@Autowired
-	private AssociateRepository assosiateRepository;
+	
 	@Autowired
 	private EventInfoRepository eventInfoRepository;
 	@Autowired

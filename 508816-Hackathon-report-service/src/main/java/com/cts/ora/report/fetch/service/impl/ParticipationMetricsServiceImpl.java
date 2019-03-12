@@ -50,9 +50,9 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 			}
 		}else {
 			if(ServiceHelper.isRequestForAllGeo(request)) {
-				metricsData=geoMetricsRepository.getGeoMetricsForPeriod(request.getStartPeriod(), request.getEndPeriod());
+				metricsData=geoMerticsDao.getGeoMetrics(request.getStartPeriod(), request.getEndPeriod(),new ArrayList<>());
 			}else {
-				metricsData=geoMetricsRepository.getGeoMetricsForPeriodLocation(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request));
+				metricsData=geoMerticsDao.getGeoMetrics(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request));
 			}
 		}
 		metrics=calculateParticipationMetricsForGeo(metricsData);
@@ -96,9 +96,9 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 			}
 		}else {
 			if(ServiceHelper.isRequestForAllGeo(request)) {
-				metricsData=buMetricsRepository.getBuMetricsForPeriod(request.getStartPeriod(), request.getEndPeriod());
+				metricsData=buMetricsDao.getBuMetrics(request.getStartPeriod(), request.getEndPeriod(),new ArrayList<>());
 			}else {
-				metricsData=buMetricsRepository.getBuMetricsForPeriodLocation(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request));
+				metricsData=buMetricsDao.getBuMetrics(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request));
 			}
 		}
 		metrics=calculateParticipationMetricsForBu(metricsData);

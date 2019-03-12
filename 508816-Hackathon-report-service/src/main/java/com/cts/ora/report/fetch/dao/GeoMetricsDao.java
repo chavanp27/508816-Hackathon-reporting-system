@@ -7,4 +7,5 @@ import com.cts.ora.report.domain.model.GeoMetrics;
 public interface GeoMetricsDao {
 
 	public List<GeoMetrics> getGeoMetricsForUser(Integer startPeriod,Integer endPeriod,List<Integer> locIds,Long ascId);
+	public List<GeoMetrics> getGeoMetrics(Integer startPeriod,Integer endPeriod,List<Integer> locIds);
 }
