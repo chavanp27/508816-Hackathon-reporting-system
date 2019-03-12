@@ -38,6 +38,7 @@ public class AcquisitionMetricsServiceImpl implements AcquisitionMetricsService 
 	public List<AcquisitionMetrics> getGeographyMetrics(FetchRequest request) {
 		List<EventInfo> metricsData=null;
 		List<EventInfo> prevMetricData=null;
+		ServiceHelper.calculateStartPeriod(request);
 		if(ServiceHelper.isRequestForAllGeo(request)) {
 			metricsData=eventInfoRepository.getEventsByPeriod(request.getStartPeriod(), request.getEndPeriod());
 			prevMetricData=eventInfoRepository.getEventsByPeriod(ORAUtil.decrementPeriod(request.getStartPeriod()), request.getStartPeriod());
@@ -88,6 +89,7 @@ public class AcquisitionMetricsServiceImpl implements AcquisitionMetricsService 
 
 	@Override
 	public List<AcquisitionMetrics> getBUMetrics(FetchRequest request) {
+		ServiceHelper.calculateStartPeriod(request);
 		List<EventInfo> metricsData=eventInfoRepository.getEventsByPeriod(request.getStartPeriod(), request.getEndPeriod());
 		List<EventInfo> prevMetricData=eventInfoRepository.getEventsByPeriod(ORAUtil.decrementPeriod(request.getStartPeriod()), request.getStartPeriod());
 		return calculateAcquisitionMetricForBu(prevMetricData,metricsData,request);

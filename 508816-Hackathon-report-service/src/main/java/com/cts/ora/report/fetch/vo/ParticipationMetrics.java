@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class ParticipationMetrics {
 	
-	private Integer period;
+	private String period;
 	
 	private Integer location;
 	

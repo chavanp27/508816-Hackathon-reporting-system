@@ -48,6 +48,7 @@ public class EngagementMetricsServiceImpl implements EngagementMetricsService {
 	public List<EngagementMetrics> getGeographyMetrics(FetchRequest request) {
 		List<EngagementMetrics> metrics=null;
 		List<EventInfo> metricsData=null;
+		ServiceHelper.calculateStartPeriod(request);
 		if(ServiceHelper.isRequestForAllGeo(request)) {
 			metricsData=eventInfoRepository.getEventsByPeriod(request.getStartPeriod(), request.getEndPeriod());
 		}else {
@@ -96,6 +97,7 @@ public class EngagementMetricsServiceImpl implements EngagementMetricsService {
 	
 	@Override
 	public List<EngagementMetrics> getBUMetrics(FetchRequest request) {
+		ServiceHelper.calculateStartPeriod(request);
 		List<EventInfo> metricsData=eventInfoRepository.getEventsByPeriod(request.getStartPeriod(), request.getEndPeriod());
 		ORAUser loggedInUsr=oRAUserRepository.getLoggedInUser(request.getAscId());
 		if(!loggedInUsr.getRole().getRoleName().equals("PMO") && !loggedInUsr.getRole().getRoleName().equals("Admin")) {

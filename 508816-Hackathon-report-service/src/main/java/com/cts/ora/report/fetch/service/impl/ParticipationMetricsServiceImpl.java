@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.cts.ora.report.common.util.ORAUtil;
+import com.cts.ora.report.constants.ORAConstants;
 import com.cts.ora.report.domain.model.BuMetrics;
 import com.cts.ora.report.domain.model.GeoMetrics;
 import com.cts.ora.report.domain.model.ORAUser;
@@ -46,6 +48,7 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 	public List<ParticipationMetrics>  getGeographyMetrics(FetchRequest request) {
 		List<ParticipationMetrics> metrics=null;
 		List<GeoMetrics> metricsData=null;
+		ServiceHelper.calculateStartPeriod(request);
 		ORAUser loggedInUsr=oRAUserRepository.getLoggedInUser(request.getAscId());
 		if(!loggedInUsr.getRole().getRoleName().equals("PMO") && !loggedInUsr.getRole().getRoleName().equals("Admin")) {
 			if(ServiceHelper.isRequestForAllGeo(request)) {
@@ -65,13 +68,16 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 	}
 
 	
+	
+
+
 	private List<ParticipationMetrics> calculateParticipationMetricsForGeo(List<GeoMetrics> metricsData) {
 		
 		List<ParticipationMetrics> pm=new ArrayList<>();
 		for (GeoMetrics gm : metricsData) {
 			ParticipationMetrics m=new ParticipationMetrics();
 			m.setLocation(gm.getLocId().getLocId());
-			m.setPeriod(gm.getPeriod());
+			m.setPeriod(ORAUtil.getDisplayPeriod(gm.getPeriod().toString()));
 			m.setHeadCount(gm.getHeadCount());
 			m.setUniqueVolunteers(gm.getUniqueVolunteers());
 			m.setTotalEvents(gm.getTotalEvents());
@@ -92,6 +98,7 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 	public List<ParticipationMetrics>  getBUMetrics(FetchRequest request) {
 		List<ParticipationMetrics> metrics=null;
 		List<BuMetrics> metricsData=null;
+		ServiceHelper.calculateStartPeriod(request);
 		ORAUser loggedInUsr=oRAUserRepository.getLoggedInUser(request.getAscId());
 		if(!loggedInUsr.getRole().getRoleName().equals("PMO") && !loggedInUsr.getRole().getRoleName().equals("Admin")) {
 			if(ServiceHelper.isRequestForAllGeo(request)) {
@@ -115,7 +122,7 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 		for (BuMetrics gm : metricsData) {
 			ParticipationMetrics m=new ParticipationMetrics();
 			m.setBussinessUnit(gm.getBuId().getName());
-			m.setPeriod(gm.getPeriod());
+			m.setPeriod(ORAUtil.getDisplayPeriod(gm.getPeriod().toString()));
 			m.setHeadCount(gm.getHeadCount());
 			m.setUniqueVolunteers(gm.getUniqueVolunteers());
 			m.setTotalEvents(gm.getTotalEvents());
@@ -135,6 +142,7 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 	public List<ParticipationMetrics>  getFocusAreaMetrics(FetchRequest request) {
 		List<ParticipationMetrics> metrics=null;
 		List<FocusAreaMetrics> metricsData=null;
+		ServiceHelper.calculateStartPeriod(request);
 		ORAUser loggedInUsr=oRAUserRepository.getLoggedInUser(request.getAscId());
 		if(!loggedInUsr.getRole().getRoleName().equals("PMO") && !loggedInUsr.getRole().getRoleName().equals("Admin")) {
 			if(ServiceHelper.isRequestForAllGeo(request)) {
@@ -161,7 +169,7 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 			ParticipationMetrics m=new ParticipationMetrics();
 			m.setProject(gm.getProject().getTitle());
 			m.setCategory(gm.getCategory().getTitle());
-			m.setPeriod(gm.getPeriod());
+			m.setPeriod(ORAUtil.getDisplayPeriod(gm.getPeriod().toString()));
 			m.setHeadCount(gm.getHeadCount());
 			m.setUniqueVolunteers(gm.getUniqueVolunteers());
 			m.setTotalEvents(gm.getTotalEvents());

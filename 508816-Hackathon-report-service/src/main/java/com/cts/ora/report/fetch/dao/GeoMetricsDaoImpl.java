@@ -85,10 +85,12 @@ public class GeoMetricsDaoImpl implements GeoMetricsDao {
 	public List<ParticipationMetricsDetails> getGeoMetricsDetails(Integer startPeriod, Integer endPeriod, List<Integer> locIds,Long ascId){
 		List<ParticipationMetricsDetails> metricsDetails=null;
 		try {
-			String sql ="select E.asc_id as associateId,A.asc_name as associateName,EI.event_name as eventName,EI.event_date as eventDate,C.cntry_name as country,E.vol_hours as volunteerHours,E.travel_hours as travelHours,EI.on_weekend as weekendEvent" + 
+			String sql ="select E.asc_id as associateId,A.asc_name as associateName,EI.event_name as eventName,EI.event_date as eventDate,C.cntry_name as country,"
+					+ "S.name as state, GC.name as city,RA.name as residencyArea,P.name as pin,E.vol_hours as volunteerHours,E.travel_hours as travelHours,EI.on_weekend as weekendEvent" + 
 					"from ora_outreach_associate_event_map as E join ora_outreach_associate A on A.asc_id=E.asc_id inner join ora_outreach_event_info as EI " + 
-					"on E.event_id=EI.event_id join ora_ref_location as L on L.loc_id=EI.loc_id join ora_ref_geo_country as C on C.cntry_id=L.cntry_id " + 
-					"where  period between :startPeriod and : endPeriod  ";
+					"on E.event_id=EI.event_id join ora_ref_location as L on L.loc_id=EI.loc_id join ora_ref_geo_country as C on C.cntry_id=L.cntry_id join ora_ref_geo_state as S on S.state_id=L.state_id "
+					+ "join ora_ref_geo_city as GC on GC.city_id=L.city_id join ora_ref_geo_res_area as RA on RA.res_area_id=L.res_area_id join ora_ref_geo_pincode as P on P.code_id=L.code_id" + 
+					"where  EI.period between :startPeriod and : endPeriod  ";
 			TypedQuery<ParticipationMetricsDetails> query=em.createNamedQuery(sql, ParticipationMetricsDetails.class).setParameter("startPeriod", startPeriod)
 					.setParameter("endPeriod", endPeriod);
 			if(null!=ascId) {
@@ -96,7 +98,7 @@ public class GeoMetricsDaoImpl implements GeoMetricsDao {
 				query.setParameter("ascId", ascId);
 			}
 			if(!CollectionUtils.isEmpty(locIds)) {
-				sql=sql+ "and location in :locIds";
+				sql=sql+ "and L.loc_id in :locIds";
 				query.setParameter("locIds", locIds);
 			}
 			em = emf.createEntityManager();

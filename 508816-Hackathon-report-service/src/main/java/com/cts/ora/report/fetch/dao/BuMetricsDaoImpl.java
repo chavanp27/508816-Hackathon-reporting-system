@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import com.cts.ora.report.domain.model.BuMetrics;
+import com.cts.ora.report.fetch.vo.ParticipationMetricsDetails;
 
 public class BuMetricsDaoImpl implements BuMetricsDao {
 
@@ -78,4 +79,34 @@ public class BuMetricsDaoImpl implements BuMetricsDao {
 		return metricsDate;
 	}
 
+	public List<ParticipationMetricsDetails> getBuMetricsDetails(Integer startPeriod, Integer endPeriod, List<Integer> buIds,Long ascId){
+		List<ParticipationMetricsDetails> metricsDetails=null;
+		try {
+			String sql ="select E.asc_id as associateId,A.asc_name as associateName,EI.event_name as eventName,EI.event_date as eventDate,"
+					+ "AB.name as bussinessUnit,E.vol_hours as volunteerHours,E.travel_hours as travelHours,EI.on_weekend as weekendEvent" + 
+					"from ora_outreach_associate_event_map as E join ora_outreach_associate A on A.asc_id=E.asc_id join ora_outreach_assc_bu AB on A.bu_id=AB.bu_id inner join ora_outreach_event_info as EI " + 
+					"on E.event_id=EI.event_id " + 
+					"where  period between :startPeriod and : endPeriod  ";
+			TypedQuery<ParticipationMetricsDetails> query=em.createNamedQuery(sql, ParticipationMetricsDetails.class).setParameter("startPeriod", startPeriod)
+					.setParameter("endPeriod", endPeriod);
+			if(null!=ascId) {
+				sql=sql+"and E.asc_id=:ascId";
+				query.setParameter("ascId", ascId);
+			}
+			if(!CollectionUtils.isEmpty(buIds)) {
+				sql=sql+ "and A.bu_ids in :buIds";
+				query.setParameter("buIds", buIds);
+			}
+			em = emf.createEntityManager();
+			metricsDetails = query.getResultList();
+		} catch (Exception e) {
+			logger.error("Error in getGeoMetricsDetails:"+e.getMessage());
+			return null;
+		}finally {
+			if(em!=null){
+				em.close();
+			}
+		}
+		return metricsDetails;
+	}
 }
