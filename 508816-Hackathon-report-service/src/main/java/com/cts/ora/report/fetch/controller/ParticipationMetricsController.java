@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 import com.cts.ora.report.fetch.service.ParticipationMetricsService;
+import com.cts.ora.report.fetch.vo.FetchDetailsResponse;
 import com.cts.ora.report.fetch.vo.FetchRequest;
 import com.cts.ora.report.fetch.vo.FetchResponse;
 
@@ -32,9 +33,25 @@ public class ParticipationMetricsController {
 				res.setParticipationMetrics(metricsService.getGeographyMetrics(request));
 			}else if(null!=request.getBu()) {
 				res.setParticipationMetrics(metricsService.getBUMetrics(request));
+			}else {
+				res.setParticipationMetrics(metricsService.getBUMetrics(request));
 			}
 		}
 		return res;
 		
 	}
+	
+	@RequestMapping(path="/fetch/details",method=RequestMethod.POST,produces="application/json")
+	public FetchDetailsResponse fetchMetricsDetails(@RequestBody FetchRequest request) {
+		FetchDetailsResponse res=new FetchDetailsResponse();
+		res.setStatus("SUCCESS");
+		res.setResponseText("Request processed successfully");
+		res.setResponseCode("0000");
+		if(null!=request.getGeography()) {
+			res.setParticipationMetrics(metricsService.getGeographyMetricsDetails(request));
+		}
+		return res;
+		
+	}
+	
 }

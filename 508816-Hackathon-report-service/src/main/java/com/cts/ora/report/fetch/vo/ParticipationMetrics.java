@@ -13,6 +13,10 @@ public class ParticipationMetrics {
 	
 	private String bussinessUnit;
 	
+	private String project;
+	
+	private String category;
+	
 	private Integer headCount;
 	
 	private Integer uniqueVolunteers;

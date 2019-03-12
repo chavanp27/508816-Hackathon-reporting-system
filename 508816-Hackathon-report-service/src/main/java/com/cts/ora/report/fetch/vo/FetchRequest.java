@@ -18,5 +18,7 @@ public @Data class FetchRequest extends ORARequest {
 
 	private List<String> bu;
 	
+	private FocusArea focusArea;
+	
 	
 }

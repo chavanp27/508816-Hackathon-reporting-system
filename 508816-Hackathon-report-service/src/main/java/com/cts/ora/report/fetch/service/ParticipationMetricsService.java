@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.cts.ora.report.fetch.vo.FetchRequest;
 import com.cts.ora.report.fetch.vo.ParticipationMetrics;
+import com.cts.ora.report.fetch.vo.ParticipationMetricsDetails;
 
 public interface ParticipationMetricsService {
 
@@ -12,6 +13,12 @@ public interface ParticipationMetricsService {
 	 * @return
 	 */
 	public List<ParticipationMetrics> getGeographyMetrics(FetchRequest request);
+	
+	/**
+	 * @param request
+	 * @return
+	 */
+	public List<ParticipationMetricsDetails> getGeographyMetricsDetails(FetchRequest request);
 	
 	/**
 	 * @param request
