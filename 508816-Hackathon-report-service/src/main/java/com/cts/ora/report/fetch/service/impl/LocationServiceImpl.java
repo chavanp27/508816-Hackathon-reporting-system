@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.cts.ora.report.domain.model.Location;
 import com.cts.ora.report.fetch.repository.LocationRepository;
 import com.cts.ora.report.fetch.service.LocationService;
 import com.cts.ora.report.fetch.vo.FetchRequest;
@@ -30,6 +31,11 @@ public class LocationServiceImpl implements LocationService {
 		}else {
 			return locationRepository.getLocationId(request.getGeography().getCountries(), request.getGeography().getStates(), request.getGeography().getCity(), request.getGeography().getArea(),request.getGeography().getPin());
 		}
+	}
+
+	@Override
+	public Location getLocationById(Integer id) {
+		return locationRepository.findById(id).get();
 	}
 
 }

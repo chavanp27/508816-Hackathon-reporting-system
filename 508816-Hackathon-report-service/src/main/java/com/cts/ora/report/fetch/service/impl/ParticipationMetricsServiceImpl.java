@@ -3,6 +3,8 @@ package com.cts.ora.report.fetch.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,7 @@ import com.cts.ora.report.fetch.dao.BuMetricsDao;
 import com.cts.ora.report.fetch.dao.FocusAreaMetricsDao;
 import com.cts.ora.report.fetch.dao.GeoMetricsDao;
 import com.cts.ora.report.fetch.repository.BuMetricsRepository;
+import com.cts.ora.report.fetch.repository.BussinessUnitRepository;
 import com.cts.ora.report.fetch.repository.GeoMetricsRepository;
 import com.cts.ora.report.fetch.repository.LocationRepository;
 import com.cts.ora.report.fetch.repository.ORAUserRepository;
@@ -27,13 +30,16 @@ import com.cts.ora.report.fetch.vo.ParticipationMetricsDetails;
 @Service
 public class ParticipationMetricsServiceImpl implements ParticipationMetricsService {
 
+	Logger logger=LoggerFactory.getLogger(ParticipationMetricsServiceImpl.class);
+	
 	@Autowired
 	GeoMetricsRepository geoMetricsRepository;
 	@Autowired
 	GeoMetricsDao geoMerticsDao;
 	@Autowired
 	BuMetricsRepository buMetricsRepository;
-	
+	@Autowired
+	BussinessUnitRepository bussinessUnitRepository;
 	@Autowired
 	LocationService locationService;
 	
@@ -50,6 +56,7 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 		List<GeoMetrics> metricsData=null;
 		ServiceHelper.calculateStartPeriod(request);
 		ORAUser loggedInUsr=oRAUserRepository.getLoggedInUser(request.getAscId());
+		logger.info("User Info ::"+loggedInUsr);
 		if(!loggedInUsr.getRole().getRoleName().equals("PMO") && !loggedInUsr.getRole().getRoleName().equals("Admin")) {
 			if(ServiceHelper.isRequestForAllGeo(request)) {
 				metricsData=geoMerticsDao.getGeoMetricsForUser(request.getStartPeriod(), request.getEndPeriod(), new ArrayList<>(), request.getAscId());
@@ -76,10 +83,12 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 		List<ParticipationMetrics> pm=new ArrayList<>();
 		for (GeoMetrics gm : metricsData) {
 			ParticipationMetrics m=new ParticipationMetrics();
-			m.setLocation(gm.getLocId().getLocId());
+			m.setLocation(locationService.getLocationById(gm.getLocId().getLocId()));
 			m.setPeriod(ORAUtil.getDisplayPeriod(gm.getPeriod().toString()));
 			m.setHeadCount(gm.getHeadCount());
 			m.setUniqueVolunteers(gm.getUniqueVolunteers());
+			m.setVolunteerHours(gm.getVolunteerHours());
+			m.setTravelHours(gm.getTravelHours());
 			m.setTotalEvents(gm.getTotalEvents());
 			m.setTotalHours(Integer.sum(gm.getVolunteerHours(), gm.getTravelHours()));
 			m.setCoverage(Integer.divideUnsigned(gm.getUniqueVolunteers(), gm.getHeadCount()));
@@ -101,18 +110,19 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 		ServiceHelper.calculateStartPeriod(request);
 		ORAUser loggedInUsr=oRAUserRepository.getLoggedInUser(request.getAscId());
 		if(!loggedInUsr.getRole().getRoleName().equals("PMO") && !loggedInUsr.getRole().getRoleName().equals("Admin")) {
-			if(ServiceHelper.isRequestForAllGeo(request)) {
+			if(ServiceHelper.isRequestForAllBU(request)) {
 				metricsData=buMetricsDao.getBuMetricsForUser(request.getStartPeriod(), request.getEndPeriod(), new ArrayList<>(), request.getAscId());
 			}else {
-				metricsData=buMetricsDao.getBuMetricsForUser(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request), request.getAscId());
+				metricsData=buMetricsDao.getBuMetricsForUser(request.getStartPeriod(), request.getEndPeriod(), bussinessUnitRepository.findByName(request.getBu()), request.getAscId());
 			}
 		}else {
-			if(ServiceHelper.isRequestForAllGeo(request)) {
+			if(ServiceHelper.isRequestForAllBU(request)) {
 				metricsData=buMetricsDao.getBuMetrics(request.getStartPeriod(), request.getEndPeriod(),new ArrayList<>());
 			}else {
-				metricsData=buMetricsDao.getBuMetrics(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request));
+				metricsData=buMetricsDao.getBuMetrics(request.getStartPeriod(), request.getEndPeriod(), bussinessUnitRepository.findByName(request.getBu()));
 			}
 		}
+		logger.info("Metric date ::"+metricsData);
 		metrics=calculateParticipationMetricsForBu(metricsData);
 		return metrics;
 	}
@@ -121,7 +131,7 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 		List<ParticipationMetrics> pm=new ArrayList<>();
 		for (BuMetrics gm : metricsData) {
 			ParticipationMetrics m=new ParticipationMetrics();
-			m.setBussinessUnit(gm.getBuId().getName());
+			m.setBussinessUnit(bussinessUnitRepository.findById(gm.getBuId().getBuId()).get());
 			m.setPeriod(ORAUtil.getDisplayPeriod(gm.getPeriod().toString()));
 			m.setHeadCount(gm.getHeadCount());
 			m.setUniqueVolunteers(gm.getUniqueVolunteers());
