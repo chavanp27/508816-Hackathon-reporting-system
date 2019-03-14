@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
@@ -67,10 +68,10 @@ public class EventInfo {
 	@JoinColumn(name="locId",insertable=true,updatable=true)
 	private Location location;
 	
-	@OneToMany(mappedBy="id") @JsonIgnore
+	@OneToMany(mappedBy="id",fetch=FetchType.EAGER) @JsonIgnore
 	private Set<Associate> poc;
 	
-	@OneToMany(mappedBy="id") 
+	@OneToMany(mappedBy="id",fetch=FetchType.EAGER) 
 	private Set<Associate> volunteers;
 	
 	private Integer totalVolunteersCount;

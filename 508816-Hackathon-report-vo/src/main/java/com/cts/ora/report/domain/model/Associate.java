@@ -1,6 +1,7 @@
 package com.cts.ora.report.domain.model;
 
 import java.util.Date;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -8,6 +9,7 @@ import javax.persistence.EntityResult;
 import javax.persistence.FieldResult;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SqlResultSetMapping;
 import javax.persistence.Temporal;
@@ -27,7 +29,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity(name="ora_outreach_associate")
-@Getter @Setter @ToString(exclude= {"bu"})
+@Getter @Setter @ToString(exclude= {"bu","events"})
 @EqualsAndHashCode(of= {"id"})
 @SqlResultSetMapping(name = "AssociateMapping", entities = {
 		@EntityResult(entityClass = com.cts.ora.report.domain.model.Associate.class, fields = {
@@ -75,8 +77,8 @@ public class Associate {
 	@Transient @JsonIgnore
 	private boolean isBuExists;
 	
-	//@OneToMany
-	//@JoinColumn(name="eventId")
-	//private Set<EventInfo> events;
+	@OneToMany @JsonIgnore
+	@JoinColumn(name="eventId")
+	private Set<EventInfo> events;
 
 }

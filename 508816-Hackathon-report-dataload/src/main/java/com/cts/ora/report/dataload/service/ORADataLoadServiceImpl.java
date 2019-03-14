@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.transaction.Transactional;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -724,6 +726,7 @@ public class ORADataLoadServiceImpl implements ORADataLoadService {
 		return eventInfoList;
 	}
 	
+	@Transactional
 	private List<AssociateEventMap> parseEventDetailFile(String filePath){
 		logger.info("Into parseEventDetailFile");
 		List<EventInfo> eventInfoList=new ArrayList<>();
