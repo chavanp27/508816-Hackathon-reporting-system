@@ -11,6 +11,9 @@ public class ServiceHelper {
 				&& request.getGeography().getCity().contains(-1) && request.getGeography().getArea().contains(-1);
 	}
 	
+	public static boolean isRequestForAllBU(FetchRequest request) {
+		return request.getBu().contains("-1");
+	}
 	public static void calculateStartPeriod(FetchRequest request) {
 		if(ORAConstants.QUARTER_TYPE.equals(request.getPeriodType())) {
 			request.setStartPeriod(ORAUtil.decrementPeriodBy(request.getStartPeriod(), -2));

@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.cts.ora.report.domain.model.Associate;
+import com.cts.ora.report.domain.model.AssociateEventMap;
 import com.cts.ora.report.domain.model.BusinessUnit;
 import com.cts.ora.report.domain.model.EventInfo;
 import com.cts.ora.report.domain.model.Location;
@@ -65,10 +66,10 @@ public class EngagementMetricsServiceImpl implements EngagementMetricsService {
 	
 	private List<EngagementMetrics> calculateMetricsForGeography(List<EventInfo> metricsData) {
 		Map<Pair<Integer, Location>,List<EventInfo>> eventMap=metricsData.stream().collect(Collectors.groupingBy(e->{return new Pair<Integer,Location>(e.getPeriod(),e.getLocation());}));
-		logger.debug("Event Map :"+eventMap);
 		List<EngagementMetrics> el=new ArrayList<>();
 		for (Pair<Integer, Location> key : eventMap.keySet()) {
 			List<Associate> asscList=eventMap.get(key).stream().map(m->m.getVolunteers()).flatMap(Collection::stream).collect(Collectors.toList());
+			logger.info("Associate List :"+asscList);
 			int oneTimers=0;
 			int twoToFiveTimers=0;
 			int fivePlusTimers=0;

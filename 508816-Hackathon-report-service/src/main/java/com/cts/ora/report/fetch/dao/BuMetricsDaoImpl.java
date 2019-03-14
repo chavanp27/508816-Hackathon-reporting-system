@@ -5,6 +5,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.slf4j.Logger;
@@ -29,18 +30,19 @@ public class BuMetricsDaoImpl implements BuMetricsDao {
 			Long ascId) {
 		List<BuMetrics> metricsDate=null;
 		try {
-			String sql ="select period,bu_id as buId, sum(eventt) as headcount,count(assc) as uniquevolunteers,sum(vh),sum(th),eventt as total_events,on_weekend" + 
-					"from (select E.asc_id as assc,A.bu_id as bu_id,count(E.event_id) as eventt,sum(E.vol_hours) as vh,sum(E.travel_hours) as th,EI.period ,EI.on_weekend" + 
-					"from ora_outreach_associate_event_map as E join ora_outreach_associate A on A.asc_id=E.asc_id join ora_outreach_event_info as EI" + 
-					"on E.event_id=EI.event_id   group by assc, bu_id, on_weekend having assc=:ascId " + 
-					") as t group by period,bu_id having period between :startPeriod and : endPeriod";
-			TypedQuery<BuMetrics> query=em.createNamedQuery(sql, BuMetrics.class).setParameter("startPeriod", startPeriod)
+			String sql ="select 1 as id, period,bu_id as bu_id, sum(eventt) as head_count,count(assc) as uni_volunteers,sum(vh) as vol_hours,sum(th) as trav_hours,max(eventt) as total_events,on_weekend as is_weekend " + 
+			"from (select E.asc_id as assc,A.bu_id as bu_id,count(E.event_id) as eventt,sum(E.vol_hours) as vh,sum(E.travel_hours) as th,EI.period ,EI.on_weekend " + 
+			"from ora_outreach_associate_event_map as E join ora_outreach_associate A on A.asc_id=E.asc_id join ora_outreach_event_info as EI " + 
+			"on E.event_id=EI.event_id group by assc, bu_id, period, on_weekend having assc=:ascId" + 
+			") as t group by period,bu_id,on_weekend having period between :startPeriod and :endPeriod";
+			em = emf.createEntityManager();
+			Query query=em.createNativeQuery(sql, BuMetrics.class).setParameter("startPeriod", startPeriod)
 					.setParameter("endPeriod", endPeriod).setParameter("ascId", ascId);
 			if(!CollectionUtils.isEmpty(buIds)) {
 				sql=sql+ "and bu_id in :buIds";
 				query.setParameter("buIds", buIds);
 			}
-			em = emf.createEntityManager();
+			
 			metricsDate=query.getResultList();
 		} catch (Exception e) {
 			logger.error("Error in getBuMetricsForUser:"+e.getMessage());
@@ -57,12 +59,13 @@ public class BuMetricsDaoImpl implements BuMetricsDao {
 	public List<BuMetrics> getBuMetrics(Integer startPeriod, Integer endPeriod, List<Integer> buIds) {
 		List<BuMetrics> metricsDate=null;
 		try {
-			String sql ="select period,bu_id as buId, sum(eventt) as headcount,count(assc) as uniquevolunteers,sum(vh),sum(th),eventt as total_events,on_weekend" + 
-					"from (select E.asc_id as assc,A.bu_id as bu_id,count(E.event_id) as eventt,sum(E.vol_hours) as vh,sum(E.travel_hours) as th,EI.period ,EI.on_weekend" + 
-					"from ora_outreach_associate_event_map as E join ora_outreach_associate A on A.asc_id=E.asc_id join ora_outreach_event_info as EI" + 
-					"on E.event_id=EI.event_id   group by assc, bu_id, on_weekend " + 
-					") as t group by period,bu_id having period between :startPeriod and : endPeriod";
-			TypedQuery<BuMetrics> query=em.createNamedQuery(sql, BuMetrics.class).setParameter("startPeriod", startPeriod)
+			String sql ="select 1 as id, period,bu_id as bu_id, sum(eventt) as head_count,count(assc) as uni_volunteers,sum(vh) as vol_hours,sum(th) as trav_hours,max(eventt) as total_events,on_weekend as is_weekend " + 
+					"from (select E.asc_id as assc,A.bu_id as bu_id,count(E.event_id) as eventt,sum(E.vol_hours) as vh,sum(E.travel_hours) as th,EI.period ,EI.on_weekend " + 
+					"from ora_outreach_associate_event_map as E join ora_outreach_associate A on A.asc_id=E.asc_id join ora_outreach_event_info as EI " + 
+					"on E.event_id=EI.event_id group by assc, bu_id, period, on_weekend " + 
+					") as t group by period,bu_id,on_weekend having period between :startPeriod and :endPeriod";
+			em = emf.createEntityManager();
+			Query query=em.createNativeQuery(sql, BuMetrics.class).setParameter("startPeriod", startPeriod)
 					.setParameter("endPeriod", endPeriod);
 			if(!CollectionUtils.isEmpty(buIds)) {
 				sql=sql+ "and bu_id in :buIds";
@@ -88,7 +91,7 @@ public class BuMetricsDaoImpl implements BuMetricsDao {
 					+ "AB.name as bussinessUnit,E.vol_hours as volunteerHours,E.travel_hours as travelHours,EI.on_weekend as weekendEvent" + 
 					"from ora_outreach_associate_event_map as E join ora_outreach_associate A on A.asc_id=E.asc_id join ora_outreach_assc_bu AB on A.bu_id=AB.bu_id inner join ora_outreach_event_info as EI " + 
 					"on E.event_id=EI.event_id " + 
-					"where  period between :startPeriod and : endPeriod  ";
+					"where  EI.period between :startPeriod and : endPeriod  ";
 			TypedQuery<ParticipationMetricsDetails> query=em.createNamedQuery(sql, ParticipationMetricsDetails.class).setParameter("startPeriod", startPeriod)
 					.setParameter("endPeriod", endPeriod);
 			if(null!=ascId) {
