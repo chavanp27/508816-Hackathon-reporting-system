@@ -106,7 +106,7 @@ public class EngagementMetricsServiceImpl implements EngagementMetricsService {
 		if(ServiceHelper.isRequestForAllBU(request)) {
 			metricsData=eventMapRepository.getAsscEventForPeriod(request.getStartPeriod(), request.getEndPeriod());
 		}else {
-			metricsData=eventMapRepository.getAsscEventForPeriodLoc(request.getStartPeriod(), request.getEndPeriod(), bussinessUnitRepository.findByName(request.getBu()));
+			metricsData=eventMapRepository.getAsscEventForPeriodBu(request.getStartPeriod(), request.getEndPeriod(), bussinessUnitRepository.findByName(request.getBu()));
 			
 		}
 		ORAUser loggedInUsr=oRAUserRepository.getLoggedInUser(request.getAscId());
