@@ -20,6 +20,7 @@ import com.cts.ora.report.domain.model.BusinessUnit;
 import com.cts.ora.report.domain.model.EventInfo;
 import com.cts.ora.report.domain.model.Location;
 import com.cts.ora.report.domain.model.ORAUser;
+import com.cts.ora.report.fetch.repository.BussinessUnitRepository;
 import com.cts.ora.report.fetch.repository.EventInfoRepository;
 import com.cts.ora.report.fetch.repository.EventMapRepository;
 import com.cts.ora.report.fetch.repository.ORAUserRepository;
@@ -44,31 +45,33 @@ public class EngagementMetricsServiceImpl implements EngagementMetricsService {
 	@Autowired
 	EventMapRepository eventMapRepository;
 	
-	
+	@Autowired
+	BussinessUnitRepository bussinessUnitRepository;
 	@Override
 	public List<EngagementMetrics> getGeographyMetrics(FetchRequest request) {
 		List<EngagementMetrics> metrics=null;
-		List<EventInfo> metricsData=null;
+		List<AssociateEventMap> metricsData=null;
 		ServiceHelper.calculateStartPeriod(request);
 		if(ServiceHelper.isRequestForAllGeo(request)) {
-			metricsData=eventInfoRepository.getEventsByPeriod(request.getStartPeriod(), request.getEndPeriod());
+			metricsData=eventMapRepository.getAsscEventForPeriod(request.getStartPeriod(), request.getEndPeriod());
 		}else {
-			metricsData=eventInfoRepository.getEventsByPeriodLocation(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request));
+			metricsData=eventMapRepository.getAsscEventForPeriodLoc(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request));
+			
 		}
 		ORAUser loggedInUsr=oRAUserRepository.getLoggedInUser(request.getAscId());
 		if(!loggedInUsr.getRole().getRoleName().equals("PMO") && !loggedInUsr.getRole().getRoleName().equals("Admin")) {
 			List<String> events=eventMapRepository.getEventsForUser(request.getAscId());
-			metricsData=metricsData.stream().filter(m->events.contains(m.getEventId())).collect(Collectors.toList());
+			metricsData=metricsData.stream().filter(m->events.contains(m.getEvent().getEventId())).collect(Collectors.toList());
 		}
 		metrics=calculateMetricsForGeography(metricsData);
 		return metrics;
 	}
 	
-	private List<EngagementMetrics> calculateMetricsForGeography(List<EventInfo> metricsData) {
-		Map<Pair<Integer, Location>,List<EventInfo>> eventMap=metricsData.stream().collect(Collectors.groupingBy(e->{return new Pair<Integer,Location>(e.getPeriod(),e.getLocation());}));
+	private List<EngagementMetrics> calculateMetricsForGeography(List<AssociateEventMap> metricsData) {
+		Map<Pair<Integer, Location>,List<AssociateEventMap>> eventMap=metricsData.stream().collect(Collectors.groupingBy(e->{return new Pair<Integer,Location>(e.getEvent().getPeriod(),e.getEvent().getLocation());}));
 		List<EngagementMetrics> el=new ArrayList<>();
 		for (Pair<Integer, Location> key : eventMap.keySet()) {
-			List<Associate> asscList=eventMap.get(key).stream().map(m->m.getVolunteers()).flatMap(Collection::stream).collect(Collectors.toList());
+			List<Associate> asscList=eventMap.get(key).stream().map(e->e.getAsc()).collect(Collectors.toList());
 			logger.info("Associate List :"+asscList);
 			int oneTimers=0;
 			int twoToFiveTimers=0;
@@ -98,37 +101,50 @@ public class EngagementMetricsServiceImpl implements EngagementMetricsService {
 	
 	@Override
 	public List<EngagementMetrics> getBUMetrics(FetchRequest request) {
+		List<AssociateEventMap> metricsData=null;
 		ServiceHelper.calculateStartPeriod(request);
-		List<EventInfo> metricsData=eventInfoRepository.getEventsByPeriod(request.getStartPeriod(), request.getEndPeriod());
+		if(ServiceHelper.isRequestForAllBU(request)) {
+			metricsData=eventMapRepository.getAsscEventForPeriod(request.getStartPeriod(), request.getEndPeriod());
+		}else {
+			metricsData=eventMapRepository.getAsscEventForPeriodLoc(request.getStartPeriod(), request.getEndPeriod(), bussinessUnitRepository.findByName(request.getBu()));
+			
+		}
 		ORAUser loggedInUsr=oRAUserRepository.getLoggedInUser(request.getAscId());
 		if(!loggedInUsr.getRole().getRoleName().equals("PMO") && !loggedInUsr.getRole().getRoleName().equals("Admin")) {
 			List<String> events=eventMapRepository.getEventsForUser(request.getAscId());
-			metricsData=metricsData.stream().filter(m->events.contains(m.getEventId())).collect(Collectors.toList());
+			metricsData=metricsData.stream().filter(m->events.contains(m.getEvent().getEventId())).collect(Collectors.toList());
 		}
-		List<EngagementMetrics> metrics=calculateMetricsForBU(metricsData,request.getBu());
+		List<EngagementMetrics> metrics=calculateMetricsForBU(metricsData);
 		return metrics;
 	}
 
-	private List<EngagementMetrics> calculateMetricsForBU(List<EventInfo> metricsData, List<String> list) {
-		List<Associate> asscList=metricsData.stream().map(m->m.getVolunteers()).flatMap(Collection::stream).filter(a->list.contains(a.getBu().getName())).collect(Collectors.toList());
-		int oneTimers=0;
-		int twoToFiveTimers=0;
-		int fivePlusTimers=0;
-		for (Associate a : asscList) {
-			if(Collections.frequency(asscList, a) == 1)	{
-				oneTimers++;
-			}else if(Collections.frequency(asscList, a) > 1 && Collections.frequency(asscList, a) < 6) {
-				twoToFiveTimers++;
-			}else {
-				fivePlusTimers++;
-			}
-		}
-		EngagementMetrics m=new EngagementMetrics();
-		m.setOneTimersCount(oneTimers);
-		m.setTwoToFiveTimersCount(twoToFiveTimers);
-		m.setFivePlusTimersCount(fivePlusTimers);
+	private List<EngagementMetrics> calculateMetricsForBU(List<AssociateEventMap> metricsData) {
+		Map<Pair<Integer, BusinessUnit>,List<AssociateEventMap>> eventMap=metricsData.stream().collect(Collectors.groupingBy(e->{return new Pair<Integer,BusinessUnit>(e.getEvent().getPeriod(),e.getAsc().getBu());}));
 		List<EngagementMetrics> el=new ArrayList<>();
-		el.add(m);
+		for (Pair<Integer, BusinessUnit> key : eventMap.keySet()) {
+			List<Associate> asscList=eventMap.get(key).stream().map(e->e.getAsc()).collect(Collectors.toList());
+			logger.info("Associate List :"+asscList);
+			int oneTimers=0;
+			int twoToFiveTimers=0;
+			int fivePlusTimers=0;
+			for (Associate a : asscList) {
+				if(Collections.frequency(asscList, a) == 1)	{
+					oneTimers++;
+				}else if(Collections.frequency(asscList, a) > 1 && Collections.frequency(asscList, a) < 6) {
+					twoToFiveTimers++;
+				}else {
+					fivePlusTimers++;
+				}
+			}
+			EngagementMetrics m=new EngagementMetrics();
+			m.setPeriod(key.getValue0());
+			m.setBussinessUnit(key.getValue1());
+			m.setOneTimersCount(oneTimers);
+			m.setTwoToFiveTimersCount(twoToFiveTimers);
+			m.setFivePlusTimersCount(fivePlusTimers);
+			
+			el.add(m);
+		}
 		return el;
 	}
 

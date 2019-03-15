@@ -17,4 +17,10 @@ public interface EventMapRepository extends JpaRepository<AssociateEventMap, Lon
 	@Query(value="select am from AssociateEventMap am where am.event.period between :startPeriod and :endPeriod")
 	List<AssociateEventMap> getAsscEventForPeriod(@Param("startPeriod") Integer startPeriod,@Param("endPeriod")Integer endPeriod);
 	
+	@Query(value="select am from AssociateEventMap am where am.event.period between :startPeriod and :endPeriod and am.event.location.locId in :locIds")
+	List<AssociateEventMap> getAsscEventForPeriodLoc(@Param("startPeriod") Integer startPeriod,@Param("endPeriod")Integer endPeriod,@Param("locIds")List<Integer> locIds);
+	
+	@Query(value="select am from AssociateEventMap am where am.event.period between :startPeriod and :endPeriod and am.asc.bu.buId in :buIds")
+	List<AssociateEventMap> getAsscEventForPeriodBu(@Param("startPeriod") Integer startPeriod,@Param("endPeriod")Integer endPeriod,@Param("buIds")List<Integer> buIds);
+	
 }
