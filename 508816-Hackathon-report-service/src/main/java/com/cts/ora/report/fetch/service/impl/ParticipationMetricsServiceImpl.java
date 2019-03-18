@@ -18,9 +18,11 @@ import com.cts.ora.report.fetch.dao.FocusAreaMetricsDao;
 import com.cts.ora.report.fetch.dao.GeoMetricsDao;
 import com.cts.ora.report.fetch.repository.BuMetricsRepository;
 import com.cts.ora.report.fetch.repository.BussinessUnitRepository;
+import com.cts.ora.report.fetch.repository.CategoryRepository;
 import com.cts.ora.report.fetch.repository.GeoMetricsRepository;
 import com.cts.ora.report.fetch.repository.LocationRepository;
 import com.cts.ora.report.fetch.repository.ORAUserRepository;
+import com.cts.ora.report.fetch.repository.ProjectRepository;
 import com.cts.ora.report.fetch.service.LocationService;
 import com.cts.ora.report.fetch.service.ParticipationMetricsService;
 import com.cts.ora.report.fetch.vo.FetchRequest;
@@ -49,6 +51,10 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 	BuMetricsDao buMetricsDao;
 	@Autowired
 	FocusAreaMetricsDao focusAreaMetricsDao;
+	@Autowired
+	ProjectRepository projectRepository;
+	@Autowired
+	CategoryRepository categoryRepository;
 	
 	@Override
 	public List<ParticipationMetrics>  getGeographyMetrics(FetchRequest request) {
@@ -155,16 +161,16 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 		ServiceHelper.calculateStartPeriod(request);
 		ORAUser loggedInUsr=oRAUserRepository.getLoggedInUser(request.getAscId());
 		if(!loggedInUsr.getRole().getRoleName().equals("PMO") && !loggedInUsr.getRole().getRoleName().equals("Admin")) {
-			if(ServiceHelper.isRequestForAllGeo(request)) {
-				metricsData=focusAreaMetricsDao.getFAMetricsForUser(request.getStartPeriod(), request.getEndPeriod(), new ArrayList<>(), request.getAscId());
+			if(ServiceHelper.isRequestForAllFA(request)) {
+				metricsData=focusAreaMetricsDao.getFAMetricsForUser(request.getStartPeriod(), request.getEndPeriod(), new ArrayList<>(),new ArrayList<>(), request.getAscId());
 			}else {
-				metricsData=focusAreaMetricsDao.getFAMetricsForUser(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request), request.getAscId());
+				metricsData=focusAreaMetricsDao.getFAMetricsForUser(request.getStartPeriod(), request.getEndPeriod(), request.getFocusArea().getProject(),request.getFocusArea().getCategory(), request.getAscId());
 			}
 		}else {
-			if(ServiceHelper.isRequestForAllGeo(request)) {
-				metricsData=focusAreaMetricsDao.getFAMetrics(request.getStartPeriod(), request.getEndPeriod(),new ArrayList<>());
+			if(ServiceHelper.isRequestForAllFA(request)) {
+				metricsData=focusAreaMetricsDao.getFAMetrics(request.getStartPeriod(), request.getEndPeriod(), new ArrayList<>(),new ArrayList<>());
 			}else {
-				metricsData=focusAreaMetricsDao.getFAMetrics(request.getStartPeriod(), request.getEndPeriod(), locationService.getLocationIds(request));
+				metricsData=focusAreaMetricsDao.getFAMetrics(request.getStartPeriod(), request.getEndPeriod(), request.getFocusArea().getProject(),request.getFocusArea().getCategory());
 			}
 		}
 		metrics=calculateParticipationMetricsForFA(metricsData);
@@ -177,8 +183,8 @@ public class ParticipationMetricsServiceImpl implements ParticipationMetricsServ
 		List<ParticipationMetrics> pm=new ArrayList<>();
 		for (FocusAreaMetrics gm : metricsData) {
 			ParticipationMetrics m=new ParticipationMetrics();
-			m.setProject(gm.getProject().getTitle());
-			m.setCategory(gm.getCategory().getTitle());
+			m.setProject(projectRepository.findById(gm.getProject().getProj_id()).get());
+			m.setCategory(categoryRepository.findById(gm.getCategory().getCat_id()).get());
 			m.setPeriod(ORAUtil.getDisplayPeriod(gm.getPeriod().toString()));
 			m.setHeadCount(gm.getHeadCount());
 			m.setUniqueVolunteers(gm.getUniqueVolunteers());

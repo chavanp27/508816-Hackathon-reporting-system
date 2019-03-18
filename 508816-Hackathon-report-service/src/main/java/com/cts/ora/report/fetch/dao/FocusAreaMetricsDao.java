@@ -6,6 +6,6 @@ import com.cts.ora.report.fetch.vo.FocusAreaMetrics;
 
 public interface FocusAreaMetricsDao {
 
-	public List<FocusAreaMetrics> getFAMetricsForUser(Integer startPeriod,Integer endPeriod,List<Integer> locIds,Long ascId);
-	public List<FocusAreaMetrics> getFAMetrics(Integer startPeriod,Integer endPeriod,List<Integer> locIds);
+	public List<FocusAreaMetrics> getFAMetricsForUser(Integer startPeriod,Integer endPeriod, List<Integer> projects,List<Integer> categories,Long ascId);
+	public List<FocusAreaMetrics> getFAMetrics(Integer startPeriod,Integer endPeriod, List<Integer> projects,List<Integer> categories);
 }

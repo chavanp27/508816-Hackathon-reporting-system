@@ -13,7 +13,7 @@ public class RequestValidator {
 	public FetchResponse validateFetchRequest(FetchRequest request) {
 		FetchResponse res=new FetchResponse();
 		
-		if(null!= request && null!=request.getStartPeriod() && null!=request.getEndPeriod() && (null!=request.getGeography() || null!= request.getBu())) {
+		if(null!= request && null!=request.getStartPeriod() && null!=request.getEndPeriod() && (null!=request.getGeography() || null!= request.getBu() || null!=request.getFocusArea())) {
 			res.setStatus("SUCCESS");
 			res.setResponseText("Request processed successfully");
 			res.setResponseCode("0000");

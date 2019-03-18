@@ -34,7 +34,7 @@ public class ParticipationMetricsController {
 			}else if(null!=request.getBu()) {
 				res.setParticipationMetrics(metricsService.getBUMetrics(request));
 			}else {
-				res.setParticipationMetrics(metricsService.getBUMetrics(request));
+				res.setParticipationMetrics(metricsService.getFocusAreaMetrics(request));
 			}
 		}
 		return res;

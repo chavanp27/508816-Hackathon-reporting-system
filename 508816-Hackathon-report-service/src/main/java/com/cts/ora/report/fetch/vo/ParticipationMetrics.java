@@ -3,7 +3,9 @@ package com.cts.ora.report.fetch.vo;
 
 
 import com.cts.ora.report.domain.model.BusinessUnit;
+import com.cts.ora.report.domain.model.EventCategory;
 import com.cts.ora.report.domain.model.Location;
+import com.cts.ora.report.domain.model.Project;
 
 import lombok.Data;
 
@@ -16,9 +18,9 @@ public class ParticipationMetrics {
 	
 	private BusinessUnit bussinessUnit;
 	
-	private String project;
+	private Project project;
 	
-	private String category;
+	private EventCategory category;
 	
 	private Integer headCount;
 	
